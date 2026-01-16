@@ -70,7 +70,8 @@ export const LessonVideoPlayer: React.FC<VideoPlayerProps> = ({
         })
 
         player.on('timeupdate', () => {
-            if (onProgress) onProgress(player.currentTime())
+            const currentTime = player.currentTime()
+            if (onProgress && typeof currentTime === 'number') onProgress(currentTime)
         })
 
         playerRef.current = player
