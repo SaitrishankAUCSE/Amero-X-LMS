@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, use, useRef } from 'react'
 import { createBrowserClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { PlayCircle, FileText, CheckCircle, Lock, Menu, X, ChevronLeft } from 'lucide-react'
+import { PlayCircle, FileText, CheckCircle, Lock, Menu, X, ChevronLeft, Bookmark, Clock } from 'lucide-react'
 import Navbar from '@/components/navbar'
+import { LessonVideoPlayer } from '@/components/video/lesson-player'
+import { getLessonProgress } from '@/app/actions/progress-actions'
+import { LessonNotes } from '@/components/video/lesson-notes'
 
 export default function LearnPage({ params }: { params: Promise<{ courseId: string }> }) {
     // Unwrap params using React.use()
@@ -17,6 +20,10 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
     const [activeLesson, setActiveLesson] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [sidebarOpen, setSidebarOpen] = useState(true)
+    const [user, setUser] = useState<any>(null)
+    const [progress, setProgress] = useState<any>(null)
+    const [currentTime, setCurrentTime] = useState(0)
+    const playerRef = useRef<any>(null)
 
     useEffect(() => {
         const loadCourseContent = async () => {
@@ -72,15 +79,31 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
             if (lessonsData) {
                 setLessons(lessonsData)
                 if (lessonsData.length > 0) {
-                    setActiveLesson(lessonsData[0])
+                    const firstLesson = lessonsData[0]
+                    setActiveLesson(firstLesson)
+
+                    // Fetch progress for first lesson
+                    const progressData = await getLessonProgress(user.id, firstLesson.id)
+                    setProgress(progressData)
                 }
             }
 
+            setUser(user)
             setLoading(false)
         }
 
         loadCourseContent()
     }, [courseId, router])
+
+    const handleLessonChange = async (lesson: any) => {
+        setLoading(true) // Show subtle loading if needed
+        setActiveLesson(lesson)
+        if (user) {
+            const progressData = await getLessonProgress(user.id, lesson.id)
+            setProgress(progressData)
+        }
+        setLoading(false)
+    }
 
     if (loading) {
         return <div className="min-h-screen bg-background flex items-center justify-center text-white">Loading content...</div>
@@ -151,58 +174,101 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
 
                     <div className="max-w-4xl mx-auto space-y-8">
                         {/* Video Player Area */}
-                        <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl relative group">
-                            {activeLesson?.video_url ? (
-                                activeLesson.video_url.includes('youtube') ? (
-                                    <iframe
-                                        src={activeLesson.video_url.replace('watch?v=', 'embed/')}
-                                        className="w-full h-full"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
+                        <div className="bg-black rounded-2xl overflow-hidden shadow-2xl relative group border border-white/5">
+                            {activeLesson && user ? (
+                                activeLesson.content_type === 'video' ? (
+                                    <LessonVideoPlayer
+                                        key={activeLesson.id}
+                                        src={activeLesson.video_url}
+                                        courseId={courseId}
+                                        lessonId={activeLesson.id}
+                                        userId={user.id}
+                                        initialProgress={progress?.video_progress_seconds || 0}
+                                        onProgress={(seconds) => setCurrentTime(seconds)}
+                                        onReady={(player) => playerRef.current = player}
+                                        onComplete={() => {
+                                            // Handle next lesson
+                                        }}
                                     />
                                 ) : (
-                                    <video src={activeLesson.video_url} controls className="w-full h-full" />
+                                    <div className="aspect-video flex items-center justify-center bg-gray-900 text-white p-12 text-center">
+                                        <div>
+                                            <FileText className="w-16 h-16 text-primary mx-auto mb-4" />
+                                            <h3 className="text-xl font-bold mb-2">Text Content</h3>
+                                            <p className="text-muted-foreground">{activeLesson.title}</p>
+                                        </div>
+                                    </div>
                                 )
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground flex-col gap-4">
+                                <div className="aspect-video w-full h-full flex items-center justify-center text-muted-foreground flex-col gap-4 bg-gray-900">
                                     <PlayCircle className="w-16 h-16 opacity-20" />
                                     <p>Select a lesson to start watching</p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Title & Description */}
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                                {activeLesson?.title || 'Welcome to the Course'}
-                            </h1>
-                            <div className="prose dark:prose-invert max-w-none text-muted-foreground">
-                                <p>{activeLesson?.description}</p>
+                        {/* Title & Description & Notes */}
+                        <div className="grid lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 space-y-6">
+                                <div>
+                                    <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+                                        {activeLesson?.title || 'Welcome to the Course'}
+                                    </h1>
+                                    <div className="prose dark:prose-invert max-w-none text-muted-foreground">
+                                        <p>{activeLesson?.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-1">
+                                {activeLesson && user && (
+                                    <LessonNotes
+                                        userId={user.id}
+                                        courseId={courseId}
+                                        lessonId={activeLesson.id}
+                                        currentTimestamp={currentTime}
+                                        onJumpToTime={(seconds) => {
+                                            if (playerRef.current) {
+                                                playerRef.current.currentTime(seconds)
+                                                playerRef.current.play()
+                                            }
+                                        }}
+                                    />
+                                )}
                             </div>
                         </div>
 
                         {/* Resources */}
                         <div className="pt-8 border-t border-border">
-                            <h3 className="text-lg font-semibold text-foreground mb-4">Resources</h3>
+                            <h3 className="text-lg font-semibold text-foreground mb-4">Lesson Resources</h3>
                             <div className="grid md:grid-cols-2 gap-4">
-                                <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-accent/50 transition-colors group">
-                                    <div className="p-2 bg-red-500/10 rounded-lg">
-                                        <FileText className="w-5 h-5 text-red-500" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-foreground group-hover:text-primary transition-colors">Lesson Slides.pdf</p>
-                                        <p className="text-xs text-muted-foreground">2.4 MB</p>
-                                    </div>
-                                </a>
-                                <a href="https://files.edgestore.dev/syllabus.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-accent/50 transition-colors group">
-                                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                                        <FileText className="w-5 h-5 text-blue-500" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-foreground group-hover:text-primary transition-colors">Source Code.zip</p>
-                                        <p className="text-xs text-muted-foreground">1.1 MB</p>
-                                    </div>
-                                </a>
+                                {activeLesson?.description?.match(/\[([^\]]+)\]\(([^)]+\.pdf)\)/g)?.map((match: string, i: number) => {
+                                    const [, title, url] = match.match(/\[([^\]]+)\]\(([^)]+\.pdf)\)/) || [];
+                                    return (
+                                        <a
+                                            key={i}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:bg-accent/50 transition-colors group"
+                                        >
+                                            <div className="p-2 bg-red-500/10 rounded-lg">
+                                                <FileText className="w-5 h-5 text-red-500" />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-foreground group-hover:text-primary transition-colors">{title}</p>
+                                                <p className="text-xs text-muted-foreground">PDF Document</p>
+                                            </div>
+                                        </a>
+                                    );
+                                }) || (
+                                        <div className="col-span-2 p-8 border border-dashed border-border rounded-xl text-center text-muted-foreground">
+                                            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <FileText className="w-6 h-6 opacity-20" />
+                                            </div>
+                                            <p>No specific resources attached to this lesson.</p>
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     </div>

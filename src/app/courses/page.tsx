@@ -5,7 +5,7 @@ import { createBrowserClient } from '@/lib/supabase'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import CourseCard from '@/components/course-card'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import PaymentModal from '@/components/payment-modal'
 
@@ -22,86 +22,141 @@ export default function CoursesPage() {
     const router = useRouter()
 
     useEffect(() => {
-        loadData()
-    }, [])
+        let isMounted = true
 
-    async function loadData() {
-        const supabase = createBrowserClient()
+        async function loadData() {
+            const supabase = createBrowserClient()
 
-        try {
-            // Load categories
-            const { data: categoriesData, error: categoriesError } = await supabase
-                .from('categories')
-                .select('*')
-                .order('name')
-
-            if (categoriesError) {
-                console.error('Error loading categories:', categoriesError)
-            } else if (categoriesData) {
-                setCategories(categoriesData)
-            }
-
-            // Load published courses
-            const { data: coursesData, error: coursesError } = await supabase
-                .from('courses')
-                .select('*')
-                .eq('is_published', true)
-                .order('created_at', { ascending: false })
-
-            if (coursesError) {
-                console.error('Error loading courses:', coursesError)
-                setCourses([])
-            } else if (coursesData && coursesData.length > 0) {
-                // Get unique instructor IDs and category IDs
-                const instructorIds = [...new Set(coursesData.map((c: any) => c.instructor_id).filter(Boolean))]
-                const categoryIds = [...new Set(coursesData.map((c: any) => c.category_id).filter(Boolean))]
-
-                // Fetch instructors
-                const { data: instructorsData } = await supabase
-                    .from('profiles')
-                    .select('id, full_name')
-                    .in('id', instructorIds)
-
-                // Fetch categories
-                const { data: categoriesDataForCourses } = await supabase
+            try {
+                // Load categories
+                const { data: categoriesData, error: categoriesError } = await supabase
                     .from('categories')
-                    .select('id, name')
-                    .in('id', categoryIds)
+                    .select('*')
+                    .order('name')
 
-                // Create lookup maps
-                const instructorMap = new Map(instructorsData?.map((i: any) => [i.id, i.full_name]) || [])
-                const categoryMap = new Map(categoriesDataForCourses?.map((c: any) => [c.id, c.name]) || [])
+                if (!isMounted) return
 
-                // Format courses with instructor and category names
-                const formattedCourses = coursesData.map((course: any) => ({
-                    ...course,
-                    instructor_name: instructorMap.get(course.instructor_id) || 'Anonymous',
-                    category_name: categoryMap.get(course.category_id) || 'Uncategorized'
-                }))
-                setCourses(formattedCourses)
-            } else {
-                setCourses([])
+                if (categoriesError) {
+                    const isAbort = categoriesError.message?.includes('AbortError') ||
+                        categoriesError.message?.includes('signal is aborted') ||
+                        categoriesError.details?.includes('AbortError');
+
+                    if (!isAbort) {
+                        console.error('Error loading categories:', JSON.stringify(categoriesError, null, 2))
+                    }
+                } else if (categoriesData) {
+                    setCategories(categoriesData)
+                }
+
+                // Load published courses
+                const { data: coursesData, error: coursesError } = await supabase
+                    .from('courses')
+                    .select('*')
+                    .eq('is_published', true)
+                    .order('created_at', { ascending: false })
+
+                if (!isMounted) return
+
+                if (coursesError) {
+                    const isAbort = coursesError.message?.includes('AbortError') ||
+                        coursesError.message?.includes('signal is aborted') ||
+                        coursesError.details?.includes('AbortError');
+
+                    if (!isAbort) {
+                        console.error('Error loading courses (full):', coursesError)
+                        console.error('Error details:', {
+                            message: coursesError.message,
+                            code: coursesError.code,
+                            details: coursesError.details,
+                            hint: coursesError.hint
+                        })
+                        setCourses([])
+                    }
+                } else if (coursesData && coursesData.length > 0) {
+                    // Get unique instructor IDs and category IDs
+                    const instructorIds = [...new Set(coursesData.map((c: any) => c.instructor_id).filter(Boolean))]
+                    const categoryIds = [...new Set(coursesData.map((c: any) => c.category_id).filter(Boolean))]
+
+                    // Fetch instructors
+                    const { data: instructorsData } = await supabase
+                        .from('profiles')
+                        .select('id, full_name')
+                        .in('id', instructorIds)
+
+                    // Fetch categories (supplemental lookup)
+                    // We can reuse categoriesData if we want, but this logic guarantees we have the ones referenced by courses
+                    const { data: categoriesDataForCourses } = await supabase
+                        .from('categories')
+                        .select('id, name')
+                        .in('id', categoryIds)
+
+                    if (!isMounted) return
+
+                    // Create lookup maps
+                    const instructorMap = new Map(instructorsData?.map((i: any) => [i.id, i.full_name]) || [])
+                    const categoryMap = new Map(categoriesDataForCourses?.map((c: any) => [c.id, c.name]) || [])
+
+                    // Format courses with instructor and category names
+                    const formattedCourses = coursesData.map((course: any) => ({
+                        ...course,
+                        instructor_name: instructorMap.get(course.instructor_id) || 'Anonymous',
+                        category_name: categoryMap.get(course.category_id) || 'Uncategorized'
+                    }))
+                    setCourses(formattedCourses)
+                } else {
+                    setCourses([])
+                }
+
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser()
+                if (isMounted) {
+                    setUser(user)
+                }
+
+            } catch (error: any) {
+                if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted')) {
+                    // Request aborted, ignore
+                    return
+                }
+                if (isMounted) {
+                    console.error('Unexpected error loading data:', error)
+                    setCourses([])
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false)
+                }
             }
-
-            // Get current user
-            const { data: { user } } = await supabase.auth.getUser()
-            setUser(user)
-
-        } catch (error) {
-            console.error('Unexpected error loading data:', error)
-            setCourses([])
         }
 
-        setLoading(false)
-    }
+        loadData()
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
 
     const filteredCourses = courses.filter(course => {
-        const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            course.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        const searchTermLower = searchTerm.toLowerCase()
+        const matchesSearch =
+            course.title.toLowerCase().includes(searchTermLower) ||
+            course.description?.toLowerCase().includes(searchTermLower) ||
+            course.instructor_name?.toLowerCase().includes(searchTermLower) ||
+            course.category_name?.toLowerCase().includes(searchTermLower)
+
         const matchesCategory = selectedCategory === 'all' || course.category_id === selectedCategory
         const matchesLevel = selectedLevel === 'all' || course.level === selectedLevel
+
         return matchesSearch && matchesCategory && matchesLevel
     })
+
+    // Calculate category counts
+    const categoryCounts = categories.reduce((acc: any, cat: any) => {
+        const count = courses.filter(c => c.category_id === cat.id).length
+        acc[cat.id] = count
+        return acc
+    }, {})
+    const totalCount = courses.length
 
     const handleBuy = (course: any) => {
         if (!user) {
@@ -156,47 +211,58 @@ export default function CoursesPage() {
                                     Filter Courses
                                 </div>
 
-                                {/* Search */}
                                 <div className="space-y-3">
                                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Search Keywords</label>
                                     <div className="relative group">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-300" />
                                         <input
                                             type="text"
-                                            placeholder="e.g. React, Design..."
+                                            placeholder="Search courses, mentors..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full bg-black/20 border border-white/5 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-primary/50 focus:bg-black/40 transition-all placeholder:text-muted-foreground/40"
-                                            suppressHydrationWarning
+                                            className="w-full bg-black/20 border border-white/5 rounded-xl py-3 pl-10 pr-10 text-sm focus:outline-none focus:border-primary/50 focus:bg-black/40 transition-all placeholder:text-muted-foreground/40"
                                         />
+                                        {searchTerm && (
+                                            <button
+                                                onClick={() => setSearchTerm('')}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground hover:text-white transition-colors"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* Category Filter */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Category</label>
-                                    <div className="space-y-1.5">
+                                    <div className="flex justify-between items-center ml-1">
+                                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</label>
+                                        <span className="text-[10px] text-muted-foreground/60 px-2 py-0.5 bg-white/5 rounded-full">{totalCount} total</span>
+                                    </div>
+                                    <div className="space-y-1.5 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
                                         <button
                                             onClick={() => setSelectedCategory('all')}
-                                            className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between ${selectedCategory === 'all'
+                                            suppressHydrationWarning
+                                            className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between group ${selectedCategory === 'all'
                                                 ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                                                 : 'hover:bg-white/5 text-muted-foreground hover:text-white'}`}
-                                            suppressHydrationWarning
                                         >
-                                            All Categories
-                                            {selectedCategory === 'all' && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                                            <span className="truncate">All Categories</span>
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${selectedCategory === 'all' ? 'bg-white/20 text-white' : 'bg-white/5 text-muted-foreground'}`}>{totalCount}</span>
                                         </button>
                                         {categories.map(cat => (
                                             <button
                                                 key={cat.id}
+                                                suppressHydrationWarning
                                                 onClick={() => setSelectedCategory(cat.id)}
-                                                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between ${selectedCategory === cat.id
+                                                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between group ${selectedCategory === cat.id
                                                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                                                     : 'hover:bg-white/5 text-muted-foreground hover:text-white'}`}
-                                                suppressHydrationWarning
                                             >
-                                                {cat.name}
-                                                {selectedCategory === cat.id && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                                                <span className="truncate">{cat.name}</span>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${selectedCategory === cat.id ? 'bg-white/20 text-white' : 'bg-white/5 text-muted-foreground'}`}>
+                                                    {categoryCounts[cat.id] || 0}
+                                                </span>
                                             </button>
                                         ))}
                                     </div>
@@ -205,21 +271,20 @@ export default function CoursesPage() {
                                 {/* Level Filter */}
                                 <div className="space-y-3">
                                     <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">Difficulty Level</label>
-                                    <div className="relative">
-                                        <select
-                                            value={selectedLevel}
-                                            onChange={(e) => setSelectedLevel(e.target.value)}
-                                            className="w-full bg-black/20 border border-white/5 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-primary/50 focus:bg-black/40 transition-all cursor-pointer appearance-none text-foreground"
-                                            suppressHydrationWarning
-                                        >
-                                            <option value="all">Any Level</option>
-                                            <option value="beginner">Beginner</option>
-                                            <option value="intermediate">Intermediate</option>
-                                            <option value="advanced">Advanced</option>
-                                        </select>
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                            <div className="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-muted-foreground opacity-50" />
-                                        </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['all', 'beginner', 'intermediate', 'advanced'].map(level => (
+                                            <button
+                                                key={level}
+                                                suppressHydrationWarning
+                                                onClick={() => setSelectedLevel(level)}
+                                                className={`px-3 py-2.5 rounded-xl text-xs font-bold capitalize transition-all border ${selectedLevel === level
+                                                    ? 'bg-primary/10 border-primary text-primary shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)]'
+                                                    : 'bg-white/5 border-white/5 text-muted-foreground hover:border-white/20 hover:text-white'
+                                                    }`}
+                                            >
+                                                {level === 'all' ? 'Any' : level}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

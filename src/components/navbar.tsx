@@ -53,13 +53,32 @@ export default function Navbar() {
     }, [])
 
     async function checkUser() {
+        // Enforce max 2s loading time
+        const timeout = new Promise<null>((resolve) => {
+            setTimeout(() => {
+                console.warn('Auth check timed out, defaulting to guest')
+                resolve(null)
+            }, 2000)
+        })
+
         try {
-            const currentUser = await getCurrentUser()
-            setUser(currentUser)
+            const userPromise = getCurrentUser()
+            // Race: whichever finishes first. If timeout wins, we get null.
+            // If userPromise wins, we get user.
+            // Note: If timeout wins, the user fetch still runs in background but we don't await it here anymore for the UI block.
+            // But we actually want to update UI if it eventually returns? 
+            // For now, let's just unblock the UI.
+            const result = await Promise.race([userPromise, timeout])
+
+            if (result) {
+                setUser(result)
+            } else {
+                // If timed out or null, we might check again? 
+                // For now, just setUser(null) so buttons appear.
+                setUser(null)
+            }
         } catch (error) {
             console.error('Error loading user:', error)
-            // Do not set user to null here immediately if it's just a network glitch, 
-            // but for auth check it's safer.
             setUser(null)
         } finally {
             setLoading(false)
@@ -80,6 +99,7 @@ export default function Navbar() {
     const navLinks = [
         { href: '/courses', label: 'Explore', icon: BookOpen },
         { href: '/about', label: 'About', icon: GraduationCap },
+        { href: '/contact', label: 'Contact', icon: Globe },
     ]
 
     return (
@@ -95,29 +115,44 @@ export default function Navbar() {
                         <span className="font-bold text-xl tracking-tight">Amero X</span>
                     </Link>
 
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center space-x-1">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all hover:bg-white/5 ${pathname === link.href ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-white'
+                                    }`}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
+
                     {/* Right Side */}
-                    <div className="hidden md:flex items-center space-x-4">
+                    <div className="flex items-center space-x-4">
                         <button
                             onClick={() => toast.success('Language selector coming soon!')}
-                            className="flex items-center gap-2 mr-4 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-xs font-semibold text-muted-foreground hover:text-white transition-all active:scale-95"
+                            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 text-xs font-semibold text-muted-foreground hover:text-white transition-all active:scale-95"
+                            suppressHydrationWarning
                         >
                             <Globe className="w-3.5 h-3.5 text-primary" />
                             <span>EN</span>
                         </button>
 
                         {!loading && !user && (
-                            <div className="flex items-center gap-4 mr-2">
+                            <div className="flex items-center gap-3">
                                 <Link
                                     href="/sign-in"
-                                    className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+                                    className="text-sm font-medium text-muted-foreground hover:text-white transition-colors"
                                 >
                                     Log In
                                 </Link>
                                 <Link
                                     href="/sign-up"
-                                    className="px-6 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 hover:scale-105 active:scale-95"
+                                    className="px-5 py-2.5 text-sm font-bold bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 hover:scale-105 active:scale-95"
                                 >
-                                    Get Started Free
+                                    Sign Up
                                 </Link>
                             </div>
                         )}
@@ -139,6 +174,7 @@ export default function Navbar() {
                                 <button
                                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                                     className="flex items-center gap-2 p-2 hover:bg-white/5 rounded-lg transition-colors focus:outline-none"
+                                    suppressHydrationWarning
                                 >
                                     {user?.avatar_url ? (
                                         <img
@@ -164,57 +200,91 @@ export default function Navbar() {
                                             className="fixed inset-0 z-40"
                                             onClick={() => setUserMenuOpen(false)}
                                         />
-                                        <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-2xl transition-all duration-200 transform origin-top-right p-2 z-50">
-                                            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 mb-2">
-                                                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Menu</p>
+                                        <div className="absolute right-0 top-full mt-3 w-72 bg-[#1a1b1e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in duration-200">
+                                            {/* User Header */}
+                                            <div className="p-4 bg-white/5 border-b border-white/10">
+                                                <p className="text-sm font-bold text-white truncate">{user?.full_name || 'My Account'}</p>
+                                                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                                             </div>
 
-                                            <div className="flex flex-col space-y-1">
-                                                {navLinks.map((link) => (
-                                                    <Link
-                                                        key={link.href}
-                                                        href={link.href}
-                                                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg transition-colors"
-                                                    >
-                                                        <link.icon className="w-4 h-4 text-gray-400" />
-                                                        {link.label}
-                                                    </Link>
-                                                ))}
-
-                                                {mounted && (
-                                                    <button
-                                                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg transition-colors text-left"
-                                                    >
-                                                        {theme === 'dark' ? <Sun className="w-4 h-4 text-gray-400" /> : <Moon className="w-4 h-4 text-gray-400" />}
-                                                        {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                                                    </button>
-                                                )}
-
-                                                <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
+                                            <div className="p-2 space-y-1">
+                                                {/* Learning Section */}
+                                                <div className="px-3 py-2">
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Learning</p>
+                                                </div>
                                                 <Link
-                                                    href={user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard'}
-                                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg transition-colors"
+                                                    href="/dashboard/my-courses"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <LayoutDashboard className="w-4 h-4 text-gray-400" />
+                                                    <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                        <BookOpen className="w-4 h-4" />
+                                                    </div>
+                                                    My Learning
+                                                </Link>
+                                                <Link
+                                                    href="/dashboard"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                                        <LayoutDashboard className="w-4 h-4" />
+                                                    </div>
                                                     Dashboard
                                                 </Link>
 
-                                                {user.role === 'admin' && (
-                                                    <Link
-                                                        href="/admin/courses/create"
-                                                        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 rounded-lg transition-colors"
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                        Upload Course
-                                                    </Link>
-                                                )}
-
-                                                <button
-                                                    onClick={handleSignOut}
-                                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors text-left"
+                                                {/* Account Section */}
+                                                <div className="px-3 py-2 mt-2">
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account</p>
+                                                </div>
+                                                <Link
+                                                    href="/settings"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <LogOut className="w-4 h-4" />
+                                                    <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                                        <Sun className="w-4 h-4" />
+                                                    </div>
+                                                    Settings & Profile
+                                                </Link>
+
+                                                {/* Support Section */}
+                                                <div className="px-3 py-2 mt-2">
+                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Support</p>
+                                                </div>
+                                                <Link
+                                                    href="/about"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                                        <GraduationCap className="w-4 h-4" />
+                                                    </div>
+                                                    About Us
+                                                </Link>
+                                                <Link
+                                                    href="/contact"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                                        <Globe className="w-4 h-4" />
+                                                    </div>
+                                                    Contact Support
+                                                </Link>
+
+                                                {/* Auth Section */}
+                                                <div className="h-px bg-white/10 my-2 mx-2" />
+                                                <button
+                                                    onClick={() => {
+                                                        handleSignOut();
+                                                        setUserMenuOpen(false);
+                                                    }}
+                                                    className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-red-500/10">
+                                                        <LogOut className="w-4 h-4" />
+                                                    </div>
                                                     Sign Out
                                                 </button>
                                             </div>
@@ -229,6 +299,7 @@ export default function Navbar() {
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="md:hidden p-2 text-muted-foreground hover:text-white"
+                        suppressHydrationWarning
                     >
                         {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>

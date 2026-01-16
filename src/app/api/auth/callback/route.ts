@@ -1,12 +1,12 @@
+import { NextResponse } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/courses'
+    // if "next" is in search params, use it as the redirection URL after callback
+    const next = searchParams.get('next') ?? '/dashboard'
 
     if (code) {
         const cookieStore = await cookies()
@@ -27,9 +27,18 @@ export async function GET(request: Request) {
                 },
             }
         )
+
         const { error } = await supabase.auth.exchangeCodeForSession(code)
+
         if (!error) {
-            return NextResponse.redirect(`${origin}${next}`)
+            // Success: Redirect to the intended page
+            const isLocalEnv = process.env.NODE_ENV === 'development'
+            if (isLocalEnv) {
+                // we can be more lenient in dev
+                return NextResponse.redirect(`${origin}${next}`)
+            } else {
+                return NextResponse.redirect(`${origin}${next}`)
+            }
         }
     }
 

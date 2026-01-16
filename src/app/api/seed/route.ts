@@ -66,51 +66,126 @@ export async function GET() {
         }
 
         // Create Default Courses if they don't exist
+        // Create Default Courses
         const defaultCourses = [
             {
-                title: 'Mastering Web3 Development',
-                slug: 'master-web3',
-                description: 'A comprehensive guide to building decentralized applications (dApps) using Solidity, Ethers.js, and Hardhat. Learn to build secure smart contracts and modern Web3 interfaces.',
-                short_description: 'Build the future with decentralized apps and smart contracts.',
-                price: 89.99,
-                instructor_id: (instructor as any).id,
-                level: 'intermediate',
-                language: 'English',
-                is_published: true,
-                thumbnail_url: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800'
-            },
-            {
-                title: 'AI & Neural Networks for Beginners',
-                slug: 'ai-neural-networks',
-                description: 'Explore the foundations of Artificial Intelligence. Understand neural networks, deep learning, and how to implement them using Python and PyTorch.',
-                short_description: 'Demystifying AI and deep learning for modern developers.',
-                price: 74.99,
+                title: 'Bitcoin Fundamentals: The Future of Money',
+                slug: 'bitcoin-fundamentals',
+                description: 'Understand the history, technology, and economic impact of Bitcoin. Learn about blockchain, mining, Wallets, and the Lightning Network.',
+                short_description: 'The complete guide to understanding Bitcoin.',
+                price: 49.99,
                 instructor_id: (instructor as any).id,
                 level: 'beginner',
                 language: 'English',
                 is_published: true,
-                thumbnail_url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800'
+                category_slug: 'cryptography',
+                thumbnail_url: 'https://images.unsplash.com/photo-1518546305927-5a440cc0c526?w=800'
             },
             {
-                title: 'Advanced Applied Cryptography',
-                slug: 'advanced-crypto',
-                description: 'Master the primitives of modern security. Learn about RSA, Elliptic Curve Cryptography, and Zero-Knowledge Proofs for privacy-preserving systems.',
-                short_description: 'The science of secure communication and digital assets.',
-                price: 99.99,
+                title: 'Mastering Ethereum & Smart Contracts',
+                slug: 'mastering-ethereum',
+                description: 'Deep dive into Ethereum, Solidity, and dApp development. Build secure smart contracts and deploy them to the testnet.',
+                short_description: 'Build decentralized applications on Ethereum.',
+                price: 89.99,
                 instructor_id: (instructor as any).id,
                 level: 'advanced',
                 language: 'English',
                 is_published: true,
-                thumbnail_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800'
+                category_slug: 'smart-contracts',
+                thumbnail_url: 'https://images.unsplash.com/photo-1622630998477-20aa696fa4f5?w=800'
+            },
+            {
+                title: 'DeFi 101: Decentralized Finance Explained',
+                slug: 'defi-101',
+                description: 'Learn how to lend, borrow, and trade without banks. Explore Uniswap, Aave, Compound, and the risks of DeFi.',
+                short_description: 'Financial freedom through decentralized protocols.',
+                price: 69.99,
+                instructor_id: (instructor as any).id,
+                level: 'intermediate',
+                language: 'English',
+                is_published: true,
+                category_slug: 'blockchain',
+                thumbnail_url: 'https://images.unsplash.com/photo-1620321023374-d1a68fddadb3?w=800'
+            },
+            {
+                title: 'AI for Everyone: Neural Networks & ML',
+                slug: 'ai-for-everyone',
+                description: 'A non-technical introduction to AI, explaining neural networks, deep learning, and how to spot opportunities for AI implementation.',
+                short_description: 'Understanding the AI revolution.',
+                price: 59.99,
+                instructor_id: (instructor as any).id,
+                level: 'beginner',
+                language: 'English',
+                is_published: true,
+                category_slug: 'ai-ml',
+                thumbnail_url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800'
+            },
+            {
+                title: 'Python for Machine Learning Bootcamp',
+                slug: 'python-ml-bootcamp',
+                description: 'Hands-on Python course covering Pandas, NumPy, Scikit-Learn, and TensorFlow. Build real predictive models from scratch.',
+                short_description: 'Become a Data Scientist with Python.',
+                price: 94.99,
+                instructor_id: (instructor as any).id,
+                level: 'interactive',
+                language: 'English',
+                is_published: true,
+                category_slug: 'ai-ml',
+                thumbnail_url: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800'
+            },
+            {
+                title: 'Crypto Trading & Technical Analysis',
+                slug: 'crypto-trading-101',
+                description: 'Master chart patterns, indicators, and risk management strategies specifically for volatile crypto markets.',
+                short_description: 'Trade Bitcoin and Altcoins like a pro.',
+                price: 129.99,
+                instructor_id: (instructor as any).id,
+                level: 'intermediate',
+                language: 'English',
+                is_published: true,
+                category_slug: 'cryptography',
+                thumbnail_url: 'https://images.unsplash.com/photo-1611974765270-ca12586343bb?w=800'
+            },
+            {
+                title: 'Generative AI: Prompt Engineering',
+                slug: 'prompt-engineering',
+                description: 'Learn how to communicate effectively with LLMs like GPT-4 and Claude. Unlock the full potential of generative AI.',
+                short_description: 'Master the art of AI communication.',
+                price: 39.99,
+                instructor_id: (instructor as any).id,
+                level: 'beginner',
+                language: 'English',
+                is_published: true,
+                category_slug: 'ai-ml',
+                thumbnail_url: 'https://images.unsplash.com/photo-1535378437327-1e4a64d0dd25?w=800'
+            },
+            {
+                title: 'Solidity Security & Auditing',
+                slug: 'solidity-auditing',
+                description: 'Advanced course on preventing re-entrancy attacks, overflow bugs, and logic errors in smart contracts.',
+                short_description: 'Secure the Web3 ecosystem.',
+                price: 149.99,
+                instructor_id: (instructor as any).id,
+                level: 'advanced',
+                language: 'English',
+                is_published: true,
+                category_slug: 'smart-contracts',
+                thumbnail_url: 'https://images.unsplash.com/photo-1639322537228-ad7117a7a6ebd?w=800'
             }
         ]
 
         for (const c of defaultCourses) {
-            // Check if exists by slug
-            const { data: existing } = await supabase.from('courses').select('id').eq('slug', c.slug).single()
-            if (!existing) {
-                await supabase.from('courses').insert(c)
-            }
+            // Find category ID
+            const { data: cat } = await supabase.from('categories').select('id').eq('slug', c.category_slug).single()
+
+            // Upsert Course
+            const { category_slug, ...courseData } = c
+            await supabase.from('courses').upsert({
+                ...courseData,
+                category_id: cat?.id || null
+            }, {
+                onConflict: 'slug'
+            })
         }
 
         // RE-FETCH ALL COURSES to seed lessons

@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Github } from 'lucide-react'
+import { Github, Eye, EyeOff, Check, AlertCircle, ShieldCheck } from 'lucide-react'
 import { signUp, signInWithOAuth } from '@/lib/auth'
 import toast from 'react-hot-toast'
+import { motion, AnimatePresence } from 'framer-motion'
+import OAuthButtons from '@/components/auth/oauth-buttons'
 
 export default function SignUpPage() {
     const router = useRouter()
@@ -16,8 +18,36 @@ export default function SignUpPage() {
         fullName: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        acceptTerms: false
     })
+    const [showPassword, setShowPassword] = useState(false)
+    const [passwordStrength, setPasswordStrength] = useState({
+        score: 0,
+        feedback: '',
+        color: 'bg-gray-200'
+    })
+
+    const calculateStrength = (pass: string) => {
+        let score = 0
+        if (pass.length > 8) score++
+        if (/[A-Z]/.test(pass)) score++
+        if (/[0-9]/.test(pass)) score++
+        if (/[^A-Za-z0-9]/.test(pass)) score++
+
+        const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500']
+        const labels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong']
+
+        setPasswordStrength({
+            score,
+            feedback: labels[score],
+            color: colors[score]
+        })
+    }
+
+    useEffect(() => {
+        calculateStrength(formData.password)
+    }, [formData.password])
 
     // Check if user is already logged in
     useEffect(() => {
@@ -113,41 +143,7 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="mt-8 space-y-4">
-                    <button
-                        type="button"
-                        onClick={() => handleOAuth('google')}
-                        disabled={oauthLoading || loading}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                        <svg className="h-5 w-5" viewBox="0 0 24 24">
-                            <path
-                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                fill="#4285F4"
-                            />
-                            <path
-                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                fill="#34A853"
-                            />
-                            <path
-                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                fill="#FBBC05"
-                            />
-                            <path
-                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                fill="#EA4335"
-                            />
-                        </svg>
-                        Sign up with Google
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleOAuth('github')}
-                        disabled={oauthLoading || loading}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                        <Github className="h-5 w-5" />
-                        Sign up with GitHub
-                    </button>
+                    <OAuthButtons />
                 </div>
 
                 <div className="relative">
@@ -191,48 +187,124 @@ export default function SignUpPage() {
                             />
                         </div>
 
-                        <div>
+                        <div className="relative">
                             <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                                 Password
                             </label>
-                            <input
-                                id="password"
-                                type="password"
-                                required
-                                className="input-field"
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            />
+                            <div className="relative group">
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    className="input-field pr-12 focus:ring-2 focus:ring-primary/50 transition-all"
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-white transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+
+                            {/* Strength Meter */}
+                            <div className="mt-3 space-y-2">
+                                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider mb-1">
+                                    <span className="text-muted-foreground">Strength: {passwordStrength.feedback}</span>
+                                    <span className={formData.password.length >= 8 ? "text-green-500" : "text-muted-foreground"}>
+                                        {formData.password.length}/8 chars
+                                    </span>
+                                </div>
+                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex gap-1">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-full flex-1 transition-all duration-500 ${i < passwordStrength.score ? passwordStrength.color : 'bg-white/5'}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
                                 Confirm Password
                             </label>
-                            <input
-                                id="confirmPassword"
-                                type="password"
-                                required
-                                className="input-field"
-                                placeholder="••••••••"
-                                value={formData.confirmPassword}
-                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                            />
+                            <div className="relative">
+                                <input
+                                    id="confirmPassword"
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    className={`input-field transition-all ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-500 ring-red-500/20' : ''}`}
+                                    placeholder="••••••••"
+                                    value={formData.confirmPassword}
+                                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                />
+                                {formData.confirmPassword && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        {formData.password === formData.confirmPassword ? (
+                                            <Check className="w-4 h-4 text-green-500" />
+                                        ) : (
+                                            <AlertCircle className="w-4 h-4 text-red-500" />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-xl border border-white/5">
+                        <input
+                            id="terms"
+                            type="checkbox"
+                            required
+                            checked={formData.acceptTerms}
+                            onChange={(e) => setFormData({ ...formData, acceptTerms: e.target.checked })}
+                            className="mt-1 w-4 h-4 rounded border-white/10 bg-black/20 text-primary focus:ring-primary/50"
+                        />
+                        <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed">
+                            I agree to the <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>. I understand my data will be securely stored.
+                        </label>
                     </div>
 
                     <button
                         type="submit"
-                        disabled={loading}
-                        className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={loading || !formData.acceptTerms || passwordStrength.score < 2}
+                        className="w-full btn-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2 group transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden relative"
                     >
-                        {loading ? 'Creating Account...' : 'Sign Up'}
+                        <AnimatePresence mode="wait">
+                            {loading ? (
+                                <motion.div
+                                    key="loader"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    <span>Securing Account...</span>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="content"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <ShieldCheck className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                    <span>Create Professional Account</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </button>
 
-                    <div className="text-center text-sm">
+                    <div className="text-center text-sm pt-2">
                         <span className="text-muted-foreground">Already have an account? </span>
-                        <Link href="/sign-in" className="text-primary hover:underline font-medium">
+                        <Link href="/sign-in" className="text-primary hover:underline font-bold transition-colors">
                             Sign In
                         </Link>
                     </div>

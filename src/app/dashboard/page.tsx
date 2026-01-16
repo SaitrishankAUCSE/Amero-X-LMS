@@ -20,14 +20,23 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        loadDashboard()
+        loadData()
     }, [])
 
-    async function loadDashboard() {
+    async function loadData() {
         try {
             const currentUser = await getCurrentUser()
+            // If component unmounted during await, stop
             if (!currentUser) {
-                router.push('/sign-in')
+                // Double check if it was just an auth failure or abort
+                // But here we rely on the router push below or just return
+                if (window.location.pathname.includes('/dashboard')) {
+                    // Only redirect if we are still on the page? 
+                    // Actually better to just check isMounted if we could, 
+                    // but since we extracted loadData, let's keep it simple:
+                    // getCurrentUser handles its own aborts now (planned).
+                    router.push('/sign-in')
+                }
                 return
             }
             setUser(currentUser)
@@ -35,7 +44,7 @@ export default function DashboardPage() {
             const supabase = createBrowserClient()
 
             // Get enrolled courses
-            const { data: enrollments } = await supabase
+            const { data: enrollments, error } = await supabase
                 .from('enrollments')
                 .select(`
           *,
@@ -50,6 +59,8 @@ export default function DashboardPage() {
                 .eq('user_id', currentUser.id)
                 .order('enrolled_at', { ascending: false })
                 .limit(4)
+
+            if (error) throw error
 
             if (enrollments) {
                 setRecentCourses(enrollments.map(e => e.courses))
@@ -69,7 +80,10 @@ export default function DashboardPage() {
                     hoursLearned: 0,
                 })
             }
-        } catch (error) {
+        } catch (error: any) {
+            if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted')) {
+                return
+            }
             console.error('Dashboard load error:', error)
             setStats({
                 enrolledCourses: 0,

@@ -55,9 +55,9 @@ BEGIN
     -- Lessons for AI Course
     INSERT INTO lessons (course_id, title, description, video_url, order_index, is_free)
     VALUES 
-      (course_ai_id, 'Introduction to Decentralized AI', 'Overview of the intersection between AI and Blockchain.', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true),
-      (course_ai_id, 'Neural Networks on IPFS', 'How to store and serve model weights using decentralized storage. [Download Resource PDF](https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 2, false),
-      (course_ai_id, 'On-chain Inference with ZK', 'Privacy-preserving AI computation on Ethereum.', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 3, false);
+      (course_ai_id, 'Introduction to Decentralized AI', 'Overview of the intersection between AI and Blockchain. [Download Resource PDF](https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true),
+      (course_ai_id, 'Neural Networks on IPFS', 'How to store and serve model weights using decentralized storage. [Model Weights Prep PDF](https://www.adobe.com/support/products/enterprise/knowledgecenter/whitepapers/pdf/aace_security.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 2, false),
+      (course_ai_id, 'On-chain Inference with ZK', 'Privacy-preserving AI computation on Ethereum. [ZK-ML Whitepaper](https://www.zkml.org/resources/whitepaper.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 3, false);
 
     -- Crypto Courses
     INSERT INTO courses (title, slug, description, short_description, price, instructor_id, category_id, level, is_published, thumbnail_url)
@@ -77,9 +77,9 @@ BEGIN
     -- Lessons for Crypto Course
     INSERT INTO lessons (course_id, title, description, video_url, order_index, is_free)
     VALUES 
-      (course_crypto_id, 'The Hash Function Landscape', 'Deep dive into SHA-256, Keccak, and Poseidon.', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true),
-      (course_crypto_id, 'Intro to Zero-Knowledge Proofs', 'Understanding the math behind ZKPs. [Study Notes PDF](https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 2, false),
-      (course_crypto_id, 'Building a ZK-Rollup', 'Architecture of a basic L2 rollup using ZKPs.', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 3, false);
+      (course_crypto_id, 'The Hash Function Landscape', 'Deep dive into SHA-256, Keccak, and Poseidon. [Hashing Tutorial PDF](https://www.cs.princeton.edu/~rs/AlgsDS07/11Hashing.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true),
+      (course_crypto_id, 'Intro to Zero-Knowledge Proofs', 'Understanding the math behind ZKPs. [ZK-Proofs Reference PDF](https://people.cs.georgetown.edu/~jthaler/ZKbook.pdf)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 2, false),
+      (course_crypto_id, 'Building a ZK-Rollup', 'Architecture of a basic L2 rollup using ZKPs. [Rollup Design PDF](https://vitalik.eth.limo/general/2021/01/05/rollup.html)', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 3, false);
 
     -- Blockchain Courses
     INSERT INTO courses (title, slug, description, short_description, price, instructor_id, category_id, level, is_published, thumbnail_url)

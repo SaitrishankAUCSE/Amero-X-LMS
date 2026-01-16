@@ -18,8 +18,10 @@ export async function signUp(email: string, password: string, fullName: string) 
         options: {
             data: {
                 full_name: fullName,
+                terms_accepted: true,
+                terms_accepted_at: new Date().toISOString()
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/api/auth/callback`,
         },
     })
 
@@ -43,9 +45,9 @@ export async function signIn(email: string, password: string) {
 }
 
 // Sign out
-export async function signOut() {
+export async function signOut(scope: 'global' | 'local' = 'local') {
     const supabase = createBrowserClient()
-    const { error } = await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut({ scope })
     if (error) throw error
 }
 
@@ -53,23 +55,42 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
     const supabase = createBrowserClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) throw error
+        if (!user) return null
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
 
-    if (!profile) return null
+        if (profileError) {
+            // If profile not found, just return basic user info or null?
+            // Usually implies data integrity issue, but let's just return basic user
+            console.warn('Profile missing for user:', user.id)
+        }
 
-    return {
-        id: user.id,
-        email: user.email!,
-        role: (profile as any).role,
-        full_name: (profile as any).full_name,
-        avatar_url: (profile as any).avatar_url,
+        if (!profile) return null
+
+        return {
+            id: user.id,
+            email: user.email!,
+            role: (profile as any).role,
+            full_name: (profile as any).full_name,
+            avatar_url: (profile as any).avatar_url,
+        }
+    } catch (error: any) {
+        if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted')) {
+            return null
+        }
+        // Only log real errors
+        if (error.message !== 'Auth session missing!') {
+            // supabase sometimes throws this if no session
+            // console.error('Error getting current user:', error)
+        }
+        return null
     }
 }
 
@@ -78,7 +99,7 @@ export async function resetPassword(email: string) {
     const supabase = createBrowserClient()
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/reset-password`,
     })
 
     if (error) throw error
@@ -88,14 +109,31 @@ export async function resetPassword(email: string) {
 export async function signInWithOAuth(provider: 'google' | 'github') {
     const supabase = createBrowserClient()
 
+    // Determine the correct origin for the redirect
+    // If we are on localhost (client-side), use window.location.origin to stay on localhost
+    // Otherwise use the production APP_URL
+    const origin = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || 'https://ameroxfoundation.com'
+    const redirectTo = `${origin}/api/auth/callback`
+
+    console.log(`Attempting OAuth sign in with ${provider}, redirecting to: ${redirectTo}`)
+
     const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
+            redirectTo,
+            queryParams: {
+                access_type: 'offline',
+                prompt: 'select_account',
+            },
         },
     })
 
-    if (error) throw error
+    if (error) {
+        console.error(`OAuth error for ${provider}:`, error)
+        throw error
+    }
 }
 
 // Update password

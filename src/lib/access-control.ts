@@ -1,0 +1,45 @@
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+export async function checkRole(allowedRoles: ('student' | 'instructor' | 'admin')[]) {
+    const cookieStore = await cookies()
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value
+                },
+            },
+        }
+    )
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/sign-in')
+    }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile || !allowedRoles.includes(profile.role as any)) {
+        redirect('/dashboard')
+    }
+
+    return user
+}
+
+export async function checkIsInstructor() {
+    return checkRole(['instructor', 'admin'])
+}
+
+export async function checkIsAdmin() {
+    return checkRole(['admin'])
+}

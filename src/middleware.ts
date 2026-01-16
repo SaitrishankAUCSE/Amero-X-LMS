@@ -29,44 +29,46 @@ export async function middleware(request: NextRequest) {
         }
     )
 
+    // IMPORTANT: DO NOT REMOVE getUser() - it's required for RLS and session refreshes
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Protected routes
-    const protectedPaths = ['/dashboard', '/instructor', '/admin', '/learn']
-    const authPaths = ['/sign-in', '/sign-up']
     const path = request.nextUrl.pathname
 
-    const isProtectedPath = protectedPaths.some(p => path.startsWith(p))
-    const isAuthPath = authPaths.some(p => path.startsWith(p))
+    // 1. Auth Paths (Redirect to dashboard if already logged in)
+    const isAuthPath = path.startsWith('/sign-in') || path.startsWith('/sign-up') || path.startsWith('/forgot-password')
+    if (isAuthPath && user) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
 
-    // Redirect to login if accessing protected route without session
+    // 2. Protected Paths (Redirect to sign-in if not logged in)
+    const protectedPaths = ['/dashboard', '/instructor', '/admin', '/learn', '/settings']
+    const isProtectedPath = protectedPaths.some(p => path.startsWith(p))
+
     if (isProtectedPath && !user) {
         const redirectUrl = new URL('/sign-in', request.url)
         redirectUrl.searchParams.set('redirect', path)
         return NextResponse.redirect(redirectUrl)
     }
 
-    // Redirect to courses if accessing auth pages with active session
-    if (isAuthPath && user) {
-        return NextResponse.redirect(new URL('/courses', request.url))
-    }
+    // 3. Role-Based Access Control (RBAC)
+    if (user) {
+        // We fetching profile for admin/instructor routes to verify role
+        if (path.startsWith('/admin') || path.startsWith('/instructor')) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single()
 
-    // Role-based access control
-    if (user && (path.startsWith('/admin') || path.startsWith('/instructor'))) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
+            // Block non-admins from /admin
+            if (path.startsWith('/admin') && profile?.role !== 'admin') {
+                return NextResponse.redirect(new URL('/dashboard', request.url))
+            }
 
-        // Instructor-only routes
-        if (path.startsWith('/instructor') && profile?.role !== 'instructor' && profile?.role !== 'admin') {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
-        }
-
-        // Admin-only routes
-        if (path.startsWith('/admin') && profile?.role !== 'admin') {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
+            // Block students from /instructor
+            if (path.startsWith('/instructor') && profile?.role === 'student') {
+                return NextResponse.redirect(new URL('/dashboard', request.url))
+            }
         }
     }
 
@@ -75,11 +77,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        '/dashboard/:path*',
-        '/instructor/:path*',
-        '/admin/:path*',
-        '/learn/:path*',
-        '/sign-in',
-        '/sign-up',
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - public assets
+         * - api/webhooks (handle webhooks without middleware auth check)
+         */
+        '/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }

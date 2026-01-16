@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import Link from 'next/link'
-import { Play, Clock, CheckCircle } from 'lucide-react'
+import { Play, Clock, CheckCircle, PlusCircle } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function MyCoursesPage() {
     const router = useRouter()
@@ -75,8 +76,8 @@ export default function MyCoursesPage() {
                             key={tab.key}
                             onClick={() => setFilter(tab.key as any)}
                             className={`px-4 py-2 rounded-md transition-colors ${filter === tab.key
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             {tab.label}
@@ -146,11 +147,40 @@ export default function MyCoursesPage() {
                     })}
                 </div>
             ) : (
-                <div className="text-center py-12 bg-card border border-border rounded-xl">
-                    <p className="text-muted-foreground mb-4">No courses found</p>
-                    <Link href="/courses" className="btn-primary">
-                        Browse Courses
-                    </Link>
+                <div className="text-center py-20 bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl shadow-xl max-w-2xl mx-auto">
+                    <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Clock className="w-12 h-12 text-primary/40" />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">Your Learning Journey Starts Here</h2>
+                    <p className="text-muted-foreground mb-8 text-lg">
+                        You haven't enrolled in any courses yet. Explore our library to find your next favorite topic.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Link href="/courses" className="btn-primary px-8 py-3 rounded-xl font-bold">
+                            Browse Courses
+                        </Link>
+
+                        {/* Dev-only seeding button if on localhost or via specific param */}
+                        {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.search.includes('dev=true')) && (
+                            <button
+                                onClick={async () => {
+                                    const user = await getCurrentUser();
+                                    if (!user) return toast.error("Log in first!");
+                                    const res = await fetch('/api/debug/enroll-all', {
+                                        method: 'POST',
+                                        body: JSON.stringify({ userId: user.id })
+                                    });
+                                    if (res.ok) {
+                                        toast.success("Enrolled in all courses! Refreshing...");
+                                        setTimeout(() => window.location.reload(), 2000);
+                                    }
+                                }}
+                                className="px-8 py-3 border border-border rounded-xl font-medium hover:bg-muted transition-colors"
+                            >
+                                Seed My Courses (Dev)
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
