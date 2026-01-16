@@ -138,6 +138,19 @@ export default function Footer() {
                     </div>
                 </div>
 
+                {/* Disclaimer - Compliance */}
+                <div className="mt-16 pt-8 border-t border-white/5 text-xs text-muted-foreground/60 leading-relaxed text-center max-w-4xl mx-auto">
+                    <p className="mb-2">
+                        <strong>Disclaimer:</strong> Amero X is a for-profit commercial educational platform operating under the domain <em>ameroxfoundation.com</em>.
+                        We are not a 501(c)(3) non-profit organization, charity, or foundation. The term "Foundation" in our domain refers to the
+                        educational foundations we provide to our students.
+                    </p>
+                    <p>
+                        All statistics regarding student numbers, course completions, and satisfaction rates are based on internal data as of January 2026.
+                        Past performance is not indicative of future results in trading or investment courses.
+                    </p>
+                </div>
+
                 {/* Bottom */}
                 <div className="mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-muted-foreground">
                     <div className="flex flex-col md:flex-row items-center gap-4">
@@ -168,6 +181,6 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
-        </footer>
+        </footer >
     )
 }

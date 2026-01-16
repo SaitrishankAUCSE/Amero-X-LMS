@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import CourseCard from '@/components/course-card'
 import HeroSection from '@/components/hero-section'
 import FeaturedCourses from '@/components/featured-courses'
+import FaqSection from '@/components/faq-section'
 
 export default async function HomePage() {
   const features = [
@@ -101,6 +102,9 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
+          <p className="text-center text-[10px] text-muted-foreground/40 mt-12 uppercase tracking-widest font-medium">
+            *Stats based on internal platform data and projected growth as of Jan 2026
+          </p>
         </div>
       </section>
 
@@ -157,6 +161,24 @@ export default async function HomePage() {
                 role: "Security Researcher",
                 content: "Hands-down the best resources for advanced Cryptography. The focus on zero-knowledge proofs is incredibly relevant for today's privacy-focused systems.",
                 avatar: "https://i.pravatar.cc/150?u=david"
+              },
+              {
+                name: "Priya Sharma",
+                role: "Blockchain Developer",
+                content: "I transitioned from Web2 to Web3 thanks to Amero X. The capstone projects are challenging and actually prepare you for real client work.",
+                avatar: "https://i.pravatar.cc/150?u=priya"
+              },
+              {
+                name: "Marcus Johnson",
+                role: "DeFi Strategist",
+                content: "The tokenomics modules are world-class. Finally, a course that explains the math behind AMMs without getting lost in jargon.",
+                avatar: "https://i.pravatar.cc/150?u=marcus"
+              },
+              {
+                name: "Elena Volkov",
+                role: "AI Ethics Researcher",
+                content: "Crucial insights into the intersection of AI and blockchain governance. Highly recommended for policy makers and researchers.",
+                avatar: "https://i.pravatar.cc/150?u=elena"
               }
             ].map((t, i) => (
               <div key={i} className="p-8 rounded-3xl bg-card border border-border shadow-2xl relative overflow-hidden group">
@@ -181,6 +203,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FaqSection />
 
       {/* CTA Section */}
       <section className="py-20 bg-primary text-primary-foreground">
