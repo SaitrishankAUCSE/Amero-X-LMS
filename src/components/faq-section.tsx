@@ -27,7 +27,7 @@ export default function FaqSection() {
         }
     ]
 
-    const [openIndex, setOpenIndex] = useState<number | null>(0)
+    const [openIndex, setOpenIndex] = useState<number | null>(null)
 
     return (
         <section className="py-24 bg-background">
@@ -45,8 +45,8 @@ export default function FaqSection() {
                         <div
                             key={index}
                             className={`border rounded-2xl transition-all duration-300 ${openIndex === index
-                                    ? 'bg-card border-primary/50 shadow-lg'
-                                    : 'bg-card/50 border-white/5 hover:border-white/20'
+                                ? 'bg-card border-primary/50 shadow-lg'
+                                : 'bg-card/50 border-white/5 hover:border-white/20'
                                 }`}
                         >
                             <button
