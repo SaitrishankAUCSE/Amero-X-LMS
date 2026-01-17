@@ -4,10 +4,17 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 
-const { Video } = new Mux(
-  process.env.MUX_TOKEN_ID!,
-  process.env.MUX_TOKEN_SECRET!
-);
+// Initialize Mux only when needed to avoid build-time errors
+const getMuxVideo = () => {
+  if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
+    return null;
+  }
+  const mux = new Mux(
+    process.env.MUX_TOKEN_ID,
+    process.env.MUX_TOKEN_SECRET
+  );
+  return mux.Video;
+};
 
 export async function DELETE(
   req: Request,
@@ -50,7 +57,14 @@ export async function DELETE(
       });
 
       if (existingMuxData) {
-        await Video.Assets.del(existingMuxData.assetId);
+        const Video = getMuxVideo();
+        if (Video) {
+          try {
+            await Video.Assets.del(existingMuxData.assetId);
+          } catch (error) {
+            console.log("[MUX_DELETE_ERROR]", error);
+          }
+        }
         await db.muxData.delete({
           where: {
             id: existingMuxData.id,
@@ -130,11 +144,13 @@ export async function PATCH(
         },
       });
 
-      if (existingMuxData) {
+      const Video = getMuxVideo();
+      
+      if (existingMuxData && Video) {
         try {
           await Video.Assets.del(existingMuxData.assetId);
         } catch (error) {
-          console.log("[Mux Asset Delete]", error);
+          console.log("[MUX_DELETE_ERROR]", error);
         }
         await db.muxData.delete({
           where: {
@@ -143,24 +159,26 @@ export async function PATCH(
         });
       }
 
-      try {
-        const asset = await Video.Assets.create({
-          input: values.videoUrl,
-          playback_policy: "public",
-          test: false,
-        });
-
-        if (asset) {
-          await db.muxData.create({
-            data: {
-              chapterId: params.chapterId,
-              assetId: asset.id,
-              playbackId: asset.playback_ids?.[0]?.id,
-            },
+      if (Video) {
+        try {
+          const asset = await Video.Assets.create({
+            input: values.videoUrl,
+            playback_policy: "public",
+            test: false,
           });
+
+          if (asset) {
+            await db.muxData.create({
+              data: {
+                chapterId: params.chapterId,
+                assetId: asset.id,
+                playbackId: asset.playback_ids?.[0]?.id,
+              },
+            });
+          }
+        } catch (error) {
+          console.log("[MUX_CREATE_ERROR]", error);
         }
-      } catch (error) {
-        console.log("[Mux Asset Create]", error);
       }
     }
 
