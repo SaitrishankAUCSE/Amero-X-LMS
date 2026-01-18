@@ -8,7 +8,6 @@ import { useTheme } from 'next-themes'
 
 import toast from 'react-hot-toast'
 import { BookOpen, GraduationCap, LayoutDashboard, LogOut, Menu, X, Rocket, Plus, Sun, Moon, Globe } from 'lucide-react'
-import AuthModal from '@/components/auth/auth-modal'
 
 
 export default function Navbar() {
@@ -120,7 +119,7 @@ export default function Navbar() {
                             <span>EN</span>
                         </button>
 
-                        {!loading && !user && (
+                        {!user && (
                             <div className="flex items-center gap-3">
                                 <Link
                                     href="/sign-in"
@@ -346,7 +345,6 @@ export default function Navbar() {
                     </div>
                 )}
             </div>
-            <AuthModal />
         </nav>
     )
 }

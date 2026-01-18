@@ -27,7 +27,7 @@ export default function MyCoursesPage() {
 
             // Timeout wrapper
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Request timed out')), 15000)
+                setTimeout(() => reject(new Error('Request timed out')), 8000)
             )
 
             const fetchDataPromise = async () => {
@@ -195,36 +195,26 @@ export default function MyCoursesPage() {
                             Browse Courses
                         </Link>
 
-                        <button
-                            onClick={async () => {
-                                const user = await getCurrentUser();
-                                if (!user) return toast.error("Log in first!");
-                                const toastId = toast.loading("Setting up your demo courses...");
-
-                                try {
-                                    const res = await fetch('/api/seed'); // Use main seed first
-                                    if (!res.ok) throw new Error("Failed to seed");
-
-                                    // Then ensure enrollment
-                                    const enrollRes = await fetch('/api/debug/enroll-all', {
+                        {/* Dev-only seeding button if on localhost or via specific param */}
+                        {typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.search.includes('dev=true')) && (
+                            <button
+                                onClick={async () => {
+                                    const user = await getCurrentUser();
+                                    if (!user) return toast.error("Log in first!");
+                                    const res = await fetch('/api/debug/enroll-all', {
                                         method: 'POST',
                                         body: JSON.stringify({ userId: user.id })
                                     });
-
-                                    if (enrollRes.ok) {
-                                        toast.success("All set! Refreshing...", { id: toastId });
-                                        setTimeout(() => window.location.reload(), 1500);
-                                    } else {
-                                        throw new Error("Failed to enroll");
+                                    if (res.ok) {
+                                        toast.success("Enrolled in all courses! Refreshing...");
+                                        setTimeout(() => window.location.reload(), 2000);
                                     }
-                                } catch (e) {
-                                    toast.error("Could not load demo data. Try again.", { id: toastId });
-                                }
-                            }}
-                            className="px-8 py-3 border border-border rounded-xl font-medium hover:bg-muted transition-colors"
-                        >
-                            Load Demo Data
-                        </button>
+                                }}
+                                className="px-8 py-3 border border-border rounded-xl font-medium hover:bg-muted transition-colors"
+                            >
+                                Seed My Courses (Dev)
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
