@@ -17,7 +17,16 @@ export async function checkIsAdmin() {
         }
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
+    let user = null
+    try {
+        const { data } = await supabase.auth.getUser()
+        user = data.user
+    } catch (error: any) {
+        if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+            redirect('/login')
+        }
+        throw error
+    }
 
     if (!user) {
         redirect('/login')
