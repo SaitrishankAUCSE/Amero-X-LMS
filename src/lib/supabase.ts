@@ -1,19 +1,12 @@
 import { createBrowserClient as createSSRBrowserClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 
-// Singleton instance for browser client
-let browserClient: ReturnType<typeof createSSRBrowserClient> | null = null
-
 // Client-side Supabase client (for components)
 export const createBrowserClient = () => {
-    if (browserClient) return browserClient
-
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-    browserClient = createSSRBrowserClient(supabaseUrl, supabaseAnonKey)
-
-    return browserClient
+    return createSSRBrowserClient(supabaseUrl, supabaseAnonKey)
 }
 
 // Server-side Supabase client (for API routes with service role)

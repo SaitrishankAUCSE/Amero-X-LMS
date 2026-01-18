@@ -37,7 +37,15 @@ export async function middleware(request: NextRequest) {
     // 1. Auth Paths (Redirect to dashboard if already logged in)
     const isAuthPath = path.startsWith('/sign-in') || path.startsWith('/sign-up') || path.startsWith('/forgot-password')
     if (isAuthPath && user) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        const redirectUrl = new URL('/dashboard', request.url)
+        const redirectResponse = NextResponse.redirect(redirectUrl)
+
+        // Copy cookies from response (which might have session updates) to redirectResponse
+        response.cookies.getAll().forEach(cookie => {
+            redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+        })
+
+        return redirectResponse
     }
 
     // 2. Protected Paths (Redirect to sign-in if not logged in)
@@ -47,7 +55,14 @@ export async function middleware(request: NextRequest) {
     if (isProtectedPath && !user) {
         const redirectUrl = new URL('/sign-in', request.url)
         redirectUrl.searchParams.set('redirect', path)
-        return NextResponse.redirect(redirectUrl)
+        const redirectResponse = NextResponse.redirect(redirectUrl)
+
+        // Copy cookies just in case (though less critical here since no session to save)
+        response.cookies.getAll().forEach(cookie => {
+            redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+        })
+
+        return redirectResponse
     }
 
     // 3. Role-Based Access Control (RBAC)
@@ -62,12 +77,22 @@ export async function middleware(request: NextRequest) {
 
             // Block non-admins from /admin
             if (path.startsWith('/admin') && profile?.role !== 'admin') {
-                return NextResponse.redirect(new URL('/dashboard', request.url))
+                const redirectUrl = new URL('/dashboard', request.url)
+                const redirectResponse = NextResponse.redirect(redirectUrl)
+                response.cookies.getAll().forEach(cookie => {
+                    redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+                })
+                return redirectResponse
             }
 
             // Block students from /instructor
             if (path.startsWith('/instructor') && profile?.role === 'student') {
-                return NextResponse.redirect(new URL('/dashboard', request.url))
+                const redirectUrl = new URL('/dashboard', request.url)
+                const redirectResponse = NextResponse.redirect(redirectUrl)
+                response.cookies.getAll().forEach(cookie => {
+                    redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+                })
+                return redirectResponse
             }
         }
     }

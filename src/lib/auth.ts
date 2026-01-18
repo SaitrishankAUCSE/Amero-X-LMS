@@ -57,7 +57,10 @@ export async function getCurrentUser(): Promise<User | null> {
 
     try {
         const { data: { user }, error } = await supabase.auth.getUser()
-        if (error) throw error
+        if (error) {
+            throw error
+        }
+        console.log('getCurrentUser found:', user?.email)
         if (!user) return null
 
         const { data: profile, error: profileError } = await supabase
@@ -67,19 +70,16 @@ export async function getCurrentUser(): Promise<User | null> {
             .single()
 
         if (profileError) {
-            // If profile not found, just return basic user info or null?
-            // Usually implies data integrity issue, but let's just return basic user
             console.warn('Profile missing for user:', user.id)
         }
 
-        if (!profile) return null
-
+        // Return profile data if available, otherwise fallback to auth metadata
         return {
             id: user.id,
             email: user.email!,
-            role: (profile as any).role,
-            full_name: (profile as any).full_name,
-            avatar_url: (profile as any).avatar_url,
+            role: profile ? (profile as any).role : 'student',
+            full_name: profile ? (profile as any).full_name : user.user_metadata?.full_name,
+            avatar_url: profile ? (profile as any).avatar_url : user.user_metadata?.avatar_url,
         }
     } catch (error: any) {
         if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted')) {

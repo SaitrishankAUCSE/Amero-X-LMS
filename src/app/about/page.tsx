@@ -55,7 +55,7 @@ export default function AboutPage() {
                 <div className="container mx-auto px-4">
                     <div className="grid md:grid-cols-2 gap-12">
                         <div className="space-y-6 p-8 bg-background rounded-3xl border border-white/5 shadow-xl">
-                            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
+                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                                 <Globe className="w-6 h-6" />
                             </div>
                             <h2 className="text-2xl font-bold">Our Mission</h2>
@@ -64,7 +64,7 @@ export default function AboutPage() {
                             </p>
                         </div>
                         <div className="space-y-6 p-8 bg-background rounded-3xl border border-white/5 shadow-xl">
-                            <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-500">
+                            <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-600">
                                 <Award className="w-6 h-6" />
                             </div>
                             <h2 className="text-2xl font-bold">Our Vision</h2>

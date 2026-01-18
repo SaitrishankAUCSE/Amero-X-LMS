@@ -108,7 +108,7 @@ export default function DashboardPage() {
         { icon: BookOpen, label: 'Enrolled Courses', value: stats.enrolledCourses, color: 'text-primary' },
         { icon: Award, label: 'Certificates', value: stats.certificatesEarned, color: 'text-yellow-500' },
         { icon: TrendingUp, label: 'Completed', value: stats.completedCourses, color: 'text-green-500' },
-        { icon: Clock, label: 'Hours Learned', value: stats.hoursLearned, color: 'text-blue-500' },
+        { icon: Clock, label: 'Hours Learned', value: stats.hoursLearned, color: 'text-amber-500' },
     ]
 
     return (

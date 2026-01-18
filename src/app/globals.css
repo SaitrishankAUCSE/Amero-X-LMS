@@ -1,7 +1,73 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+html,
+body,
+:root {
+  height: 100%;
+}
+
 @theme {
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-in: fade-in 0.8s ease-out forwards;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  /* Custom gold colors for direct use */
+  --color-gold: hsl(42 75% 45%);
+  --color-gold-light: hsl(42 60% 70%);
+  --color-gold-dark: hsl(42 80% 30%);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
 
   @keyframes fade-in {
     0% {
@@ -16,103 +82,141 @@
   }
 }
 
+/* ========================================
+   WHITE AND GOLD THEME - Light Mode
+   ======================================== */
 :root {
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
-  --card: 224 71% 4%;
-  --card-foreground: 213 31% 91%;
-  --popover: 224 71% 4%;
-  --popover-foreground: 215 20.2% 65.1%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 1.2%;
-  --secondary: 222.2 47.4% 11.2%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 223 47% 11%;
-  --muted-foreground: 215.4 16.3% 56.9%;
-  --accent: 216 34% 17%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 216 34% 17%;
-  --input: 216 34% 17%;
-  --ring: 216 34% 17%;
-  --radius: 0.75rem;
+  /* Pure white background */
+  --background: 0 0% 100%;
+  --foreground: 30 10% 15%;
+
+  /* Cards - Slightly warm white */
+  --card: 45 30% 99%;
+  --card-foreground: 30 10% 15%;
+
+  /* Popovers */
+  --popover: 0 0% 100%;
+  --popover-foreground: 30 10% 15%;
+
+  /* Primary - Rich Gold */
+  --primary: 42 75% 45%;
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary - Warm Cream */
+  --secondary: 45 40% 96%;
+  --secondary-foreground: 42 60% 25%;
+
+  /* Muted - Soft Beige */
+  --muted: 45 20% 95%;
+  --muted-foreground: 30 15% 45%;
+
+  /* Accent - Light Gold */
+  --accent: 42 50% 92%;
+  --accent-foreground: 42 75% 35%;
+
+  /* Destructive - Bronze (not red) */
+  --destructive: 30 65% 40%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Borders - Warm Gold Tint */
+  --border: 42 30% 88%;
+  --input: 42 30% 88%;
+  --ring: 42 75% 45%;
+
+  --radius: 0.5rem;
+
+  /* Chart Colors - Gold Spectrum */
+  --chart-1: 42 75% 45%;
+  --chart-2: 42 60% 60%;
+  --chart-3: 30 50% 35%;
+  --chart-4: 45 40% 80%;
+  --chart-5: 42 20% 50%;
 }
 
+/* ========================================
+   BLACK AND GOLD THEME - Dark Mode
+   ======================================== */
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+  --background: 30 10% 8%;
+  --foreground: 45 30% 95%;
+
+  --card: 30 15% 12%;
+  --card-foreground: 45 30% 95%;
+
+  --popover: 30 15% 10%;
+  --popover-foreground: 45 30% 95%;
+
+  /* Gold Primary in Dark Mode */
+  --primary: 42 80% 55%;
+  --primary-foreground: 30 10% 5%;
+
+  --secondary: 30 20% 18%;
+  --secondary-foreground: 42 70% 60%;
+
+  --muted: 30 15% 20%;
+  --muted-foreground: 42 20% 60%;
+
+  --accent: 30 25% 20%;
+  --accent-foreground: 42 80% 55%;
+
+  --destructive: 30 60% 45%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 30 20% 22%;
+  --input: 30 20% 22%;
+  --ring: 42 80% 55%;
+
+  --chart-1: 42 80% 55%;
+  --chart-2: 42 60% 65%;
+  --chart-3: 30 50% 45%;
+  --chart-4: 45 30% 70%;
+  --chart-5: 42 15% 55%;
 }
 
-* {
-  border-color: hsl(var(--border));
-}
+@layer base {
+  * {
+    @apply border-border;
+  }
 
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  body {
+    @apply bg-background text-foreground;
+  }
 }
-
 
 @layer utilities {
   .glass {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.1);
   }
 
   .btn-primary {
-    background-color: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary:hover {
-    opacity: 0.9;
-    transform: scale(1.05);
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:opacity-90 hover:scale-105 shadow-md;
   }
 
   .btn-secondary {
-    background-color: hsl(var(--secondary));
-    color: hsl(var(--secondary-foreground));
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
+    @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-accent border border-border;
   }
 
   .input-field {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    background-color: hsl(var(--background));
-    border: 1px solid hsl(var(--input));
-    outline: none;
-    transition: all 0.2s ease;
+    @apply w-full px-4 py-2 rounded-lg bg-background border border-input outline-none transition-all duration-200 focus:ring-2 focus:ring-ring focus:border-transparent;
   }
 
-  .input-field:focus {
-    box-shadow: 0 0 0 2px hsl(var(--ring));
-    border-color: transparent;
+  .gold-gradient {
+    background: linear-gradient(135deg, hsl(42 75% 45%) 0%, hsl(42 80% 55%) 100%);
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, hsl(42 80% 50%) 0%, hsl(42 60% 40%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
+
+/* Quill editor styling */
+.ql-container {
+  font-size: 16px !important;
+}
+
+@import "@uploadthing/react/styles.css";

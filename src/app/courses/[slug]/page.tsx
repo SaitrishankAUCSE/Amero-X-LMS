@@ -6,6 +6,7 @@ import { createBrowserClient } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
+import PaymentModal from '@/components/payment-modal'
 import { loadStripe } from '@stripe/stripe-js'
 import toast from 'react-hot-toast'
 import { Star, Clock, Users, BookOpen, Award, CheckCircle, Play } from 'lucide-react'
@@ -21,6 +22,8 @@ export default function CourseDetailPage() {
     const [loading, setLoading] = useState(true)
     const [isEnrolled, setIsEnrolled] = useState(false)
     const [purchasing, setPurchasing] = useState(false)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+    const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
         loadCourse()
@@ -71,12 +74,13 @@ export default function CourseDetailPage() {
         if (reviewsData) setReviews(reviewsData)
 
         // Check enrollment
-        const user = await getCurrentUser()
-        if (user) {
+        const currentUser = await getCurrentUser()
+        if (currentUser) {
+            setUser(currentUser)
             const { data: enrollment } = await supabase
                 .from('enrollments')
                 .select('id')
-                .eq('user_id', user.id)
+                .eq('user_id', currentUser.id)
                 .eq('course_id', courseData.id)
                 .single()
 
@@ -86,39 +90,8 @@ export default function CourseDetailPage() {
         setLoading(false)
     }
 
-    async function handleEnroll() {
-        try {
-            const user = await getCurrentUser()
-            if (!user) {
-                router.push(`/sign-in?redirect=/courses/${params.slug}`)
-                return
-            }
-
-            setPurchasing(true)
-
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    courseId: course.id,
-                    userId: user.id,
-                }),
-            })
-
-            const { url, error } = await response.json()
-
-            if (error) {
-                toast.error(error)
-                return
-            }
-
-            // Redirect to Stripe
-            window.location.href = url
-        } catch (error) {
-            toast.error('Failed to process enrollment')
-        } finally {
-            setPurchasing(false)
-        }
+    function handleEnroll() {
+        setIsPaymentModalOpen(true)
     }
 
     if (loading) {
@@ -203,7 +176,7 @@ export default function CourseDetailPage() {
                         <div className="lg:col-span-1">
                             <div className="bg-card border border-border rounded-xl p-6 sticky top-20">
                                 {course.preview_video_url && (
-                                    <div className="aspect-video bg-muted rounded-lg mb-4 flex items-center justify-center">
+                                    <div className="aspect-video bg-gradient-to-br from-amber-900/50 to-amber-800/50 rounded-lg mb-4 flex items-center justify-center">
                                         <Play className="w-12 h-12 text-primary" />
                                     </div>
                                 )}
@@ -334,6 +307,15 @@ export default function CourseDetailPage() {
             </div>
 
             <Footer />
+
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                course={course}
+                userId={user?.id || ''}
+                userEmail={user?.email || ''}
+                userName={user?.user_metadata?.full_name || 'Student'}
+            />
         </div>
     )
 }

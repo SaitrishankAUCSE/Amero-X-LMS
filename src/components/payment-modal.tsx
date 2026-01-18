@@ -141,7 +141,7 @@ export default function PaymentModal({ isOpen, onClose, course, userId, userEmai
                     email: userEmail,
                 },
                 theme: {
-                    color: '#6366f1', // Indigo-500
+                    color: '#c9a227', // Gold
                 },
             }
 
@@ -206,47 +206,72 @@ export default function PaymentModal({ isOpen, onClose, course, userId, userEmai
 
                             {/* Content */}
                             <div className="p-6">
-                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                                    Select Payment Method
-                                </h4>
-
-                                <div className="space-y-4">
-                                    {/* Stripe Button */}
-                                    <button
-                                        onClick={handleStripePayment}
-                                        disabled={loading}
-                                        className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#635BFF]/10 flex items-center justify-center">
-                                                <CreditCard className="w-5 h-5 text-[#635BFF]" />
-                                            </div>
-                                            <span className="font-semibold text-foreground group-hover:text-primary transition-colors">Pay with Card</span>
+                                {!userId ? (
+                                    <div className="text-center py-6">
+                                        <h4 className="text-lg font-bold mb-2">Sign in to Purchase</h4>
+                                        <p className="text-muted-foreground mb-6">
+                                            Please sign in or create an account to enroll in this course.
+                                        </p>
+                                        <div className="flex gap-3 justify-center">
+                                            <a
+                                                href={`/sign-in?redirect=/courses`}
+                                                className="px-6 py-2.5 bg-secondary text-foreground font-semibold rounded-xl hover:bg-secondary/80 transition-all"
+                                            >
+                                                Log In
+                                            </a>
+                                            <a
+                                                href={`/sign-up?redirect=/courses`}
+                                                className="px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all"
+                                            >
+                                                Sign Up
+                                            </a>
                                         </div>
-                                        <div className="text-xs font-bold bg-[#635BFF]/10 text-[#635BFF] px-2 py-1 rounded">Stripe</div>
-                                    </button>
-
-                                    {/* Razorpay Button */}
-                                    <button
-                                        onClick={handleRazorpayPayment}
-                                        disabled={loading}
-                                        className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#3395FF]/10 flex items-center justify-center">
-                                                <div className="text-[#3395FF] font-bold text-lg">$</div>
-                                            </div>
-                                            <span className="font-semibold text-foreground group-hover:text-primary transition-colors">Pay with Razorpay</span>
-                                        </div>
-                                        <div className="text-xs font-bold bg-[#3395FF]/10 text-[#3395FF] px-2 py-1 rounded">UPI / NetBanking</div>
-                                    </button>
-                                </div>
-
-                                {loading && (
-                                    <div className="mt-6 flex items-center justify-center gap-2 text-primary animate-pulse">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span className="text-sm font-medium">Processing...</span>
                                     </div>
+                                ) : (
+                                    <>
+                                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                                            Select Payment Method
+                                        </h4>
+
+                                        <div className="space-y-4">
+                                            {/* Stripe Button */}
+                                            <button
+                                                onClick={handleStripePayment}
+                                                disabled={loading}
+                                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                        <CreditCard className="w-5 h-5 text-primary" />
+                                                    </div>
+                                                    <span className="font-semibold text-foreground group-hover:text-primary transition-colors">Pay with Card</span>
+                                                </div>
+                                                <div className="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded">Stripe</div>
+                                            </button>
+
+                                            {/* Razorpay Button */}
+                                            <button
+                                                onClick={handleRazorpayPayment}
+                                                disabled={loading}
+                                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                                                        <div className="text-amber-600 font-bold text-lg">₹</div>
+                                                    </div>
+                                                    <span className="font-semibold text-foreground group-hover:text-primary transition-colors">Pay with Razorpay</span>
+                                                </div>
+                                                <div className="text-xs font-bold bg-amber-500/10 text-amber-600 px-2 py-1 rounded">UPI / NetBanking</div>
+                                            </button>
+                                        </div>
+
+                                        {loading && (
+                                            <div className="mt-6 flex items-center justify-center gap-2 text-primary animate-pulse">
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <span className="text-sm font-medium">Processing...</span>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </motion.div>

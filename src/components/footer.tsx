@@ -41,7 +41,7 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="lg:col-span-2">
                         <Link href="/" className="flex items-center space-x-2 mb-4 group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+                            <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
                                 <span className="text-white font-bold text-xl">A</span>
                             </div>
                             <span className="font-bold text-xl tracking-tight">Amero X</span>
@@ -159,8 +159,8 @@ export default function Footer() {
                         <div className="flex gap-4 items-center">
                             <span className="text-[10px] font-bold tracking-widest uppercase opacity-40">Verified Security</span>
                             <div className="flex gap-3 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
-                                <img src="https://img.shields.io/badge/SSL-Secured-green?style=flat-square&logo=letsencrypt" alt="SSL" className="h-5" />
-                                <img src="https://img.shields.io/badge/Payments-Encrypted-blue?style=flat-square&logo=stripe" alt="Stripe" className="h-5" />
+                                <img src="https://img.shields.io/badge/SSL-Secured-gold?style=flat-square&logo=letsencrypt&logoColor=white" alt="SSL" className="h-5" />
+                                <img src="https://img.shields.io/badge/Payments-Encrypted-gold?style=flat-square&logo=stripe&logoColor=white" alt="Stripe" className="h-5" />
                                 <img src="https://img.shields.io/badge/PCI-Compliant-lightgrey?style=flat-square" alt="PCI" className="h-5" />
                             </div>
                         </div>

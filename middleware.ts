@@ -55,6 +55,7 @@ export async function middleware(request: NextRequest) {
     )
 
     const { data: { user } } = await supabase.auth.getUser()
+    console.log('[Middleware] Path:', request.nextUrl.pathname, 'User:', user?.email ? 'Logged In' : 'Guest')
 
     // If user is logged in and trying to access sign-in or sign-up pages
     if (user && (request.nextUrl.pathname === '/sign-in' || request.nextUrl.pathname === '/sign-up')) {

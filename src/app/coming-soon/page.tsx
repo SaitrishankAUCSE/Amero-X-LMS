@@ -21,7 +21,7 @@ export default function ComingSoonPage() {
 
                     <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
                         Something Big is <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600">Coming Soon</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-700">Coming Soon</span>
                     </h1>
 
                     <p className="text-xl text-muted-foreground/80 leading-relaxed max-w-lg mx-auto">

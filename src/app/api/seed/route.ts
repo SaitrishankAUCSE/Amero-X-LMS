@@ -171,6 +171,45 @@ export async function GET() {
                 is_published: true,
                 category_slug: 'smart-contracts',
                 thumbnail_url: 'https://images.unsplash.com/photo-1639322537228-ad7117a7a6ebd?w=800'
+            },
+            {
+                title: 'Deep Learning for Web3',
+                slug: 'deep-learning-web3',
+                description: 'Learn how to integrate neural networks with decentralized applications. This course covers AI-driven smart contracts, decentralized model training, and on-chain inference.',
+                short_description: 'Neural networks meet decentralized logic.',
+                price: 149.00,
+                instructor_id: (instructor as any).id,
+                level: 'advanced',
+                language: 'English',
+                is_published: true,
+                category_slug: 'ai-ml',
+                thumbnail_url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800'
+            },
+            {
+                title: 'Advanced Cryptography & ZK-Proofs',
+                slug: 'advanced-crypto-zkp',
+                description: 'Master Zero-Knowledge Proofs (zk-SNARKs, zk-STARKs) and advanced cryptographic primitives used in modern privacy protocols.',
+                short_description: 'Privacy-preserving tech at its finest.',
+                price: 199.00,
+                instructor_id: (instructor as any).id,
+                level: 'advanced',
+                language: 'English',
+                is_published: true,
+                category_slug: 'cryptography',
+                thumbnail_url: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800'
+            },
+            {
+                title: 'Solidity Smart Contract Security',
+                slug: 'solidity-security',
+                description: 'Learn to write secure code and prevent re-entrancy attacks, frontrunning, and logic flaws in DeFi protocols.',
+                short_description: 'Secure your protocols today.',
+                price: 129.00,
+                instructor_id: (instructor as any).id,
+                level: 'intermediate',
+                language: 'English',
+                is_published: true,
+                category_slug: 'smart-contracts',
+                thumbnail_url: 'https://images.unsplash.com/photo-16397626801057-074b7f938ba0?w=800'
             }
         ]
 
@@ -197,32 +236,118 @@ export async function GET() {
                 const { count } = await supabase.from('lessons').select('*', { count: 'exact', head: true }).eq('course_id', courseItem.id)
 
                 if (count === 0) {
-                    const lessons = [
-                        {
-                            course_id: courseItem.id,
-                            title: `Welcome to ${courseItem.title}`,
-                            description: `Overview of the course content. [Download Syllabus](https://files.edgestore.dev/syllabus.pdf)`,
-                            video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                            order_index: 1,
-                            is_free: true
-                        },
-                        {
-                            course_id: courseItem.id,
-                            title: 'Chapter 1: Foundations',
-                            description: 'Core concepts explained deeply. Includes source code.',
-                            video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                            order_index: 2,
-                            is_free: false
-                        },
-                        {
-                            course_id: courseItem.id,
-                            title: 'Chapter 2: Advanced Techniques',
-                            description: 'Hands-on implementation of protocols.',
-                            video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-                            order_index: 3,
-                            is_free: false
+                    // Generate course-specific lessons based on course content
+                    const getLessonsForCourse = (title: string, courseId: string) => {
+                        const videos = [
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+                            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4'
+                        ]
+
+                        // Bitcoin course
+                        if (title.includes('Bitcoin')) {
+                            return [
+                                { title: 'Welcome to Bitcoin Fundamentals', description: 'Course overview, goals, and what you\'ll build. [Download Resources](https://example.com/bitcoin-resources.pdf)', is_free: true },
+                                { title: 'What is Bitcoin? History \u0026 Origins', description: 'Understanding the origin story, Satoshi Nakamoto, and the 2008 whitepaper that changed finance forever.', is_free: true },
+                                { title: 'How Bitcoin Works: Blockchain Basics', description: 'Deep dive into distributed ledgers, blocks, transactions, and cryptographic hashing (SHA-256).', is_free: false },
+                                { title: 'Bitcoin Mining Explained', description: 'Proof of Work consensus, mining pools, difficulty adjustment, and the halving events.', is_free: false },
+                                { title: 'Wallets \u0026 Key Management', description: 'Hot wallets vs cold storage, seed phrases, HD wallets, and best security practices.', is_free: false },
+                                { title: 'Bitcoin Transactions \u0026 Fees', description: 'UTXOs, transaction inputs/outputs, mempool, and optimizing transaction fees.', is_free: false },
+                                { title: 'The Lightning Network', description: 'Layer 2 scaling solution for instant, low-cost Bitcoin transactions.', is_free: false },
+                                { title: 'Bitcoin as Money: Economics \u0026 Adoption', description: 'Store of value, unit of account, medium of exchange, and global adoption trends.', is_free: false },
+                                { title: 'Bitcoin \u0026 Regulation', description: 'Legal landscape, tax implications, and how governments are responding to Bitcoin.', is_free: false },
+                                { title: 'Final Project: Set Up Your Bitcoin Node', description: 'Hands-on tutorial to run a full Bitcoin node and verify the blockchain yourself.', is_free: false }
+                            ]
                         }
-                    ]
+
+                        // Ethereum course
+                        if (title.includes('Ethereum')) {
+                            return [
+                                { title: 'Welcome to Ethereum Mastery', description: 'Course roadmap and prerequisites. [Download Starter Code](https://example.com/eth-starter.zip)', is_free: true },
+                                { title: 'Ethereum Architecture \u0026 EVM', description: 'Understanding the Ethereum Virtual Machine, gas, and account-based model.', is_free: false },
+                                { title: 'Solidity Fundamentals', description: 'Variables, data types, functions, modifiers, and contract structure.', is_free: false },
+                                { title: 'Smart Contract Design Patterns', description: 'Factory, Proxy, Diamond, and other essential patterns for scalable dApps.', is_free: false },
+                                { title: 'Web3.js \u0026 Ethers.js Integration', description: 'Connecting your frontend to smart contracts using JavaScript libraries.', is_free: false },
+                                { title: 'Deploying to Testnets', description: 'Using Hardhat, deploying to Goerli/Sepolia, and verifying contracts on Etherscan.', is_free: false },
+                                { title: 'Building a Token (ERC-20)', description: 'Create your own fungible token following the ERC-20 standard.', is_free: false },
+                                { title: 'Building an NFT Collection (ERC-721)', description: 'Mint, transfer, and manage non-fungible tokens on Ethereum.', is_free: false },
+                                { title: 'Advanced: Gas Optimization', description: 'Techniques to minimize gas costs and make your contracts efficient.', is_free: false },
+                                { title: 'Final Project: Full-Stack dApp', description: 'Build and deploy a complete decentralized application from scratch.', is_free: false }
+                            ]
+                        }
+
+                        // DeFi course
+                        if (title.includes('DeFi')) {
+                            return [
+                                { title: 'Introduction to DeFi', description: 'What is decentralized finance? Core principles and why it matters.', is_free: true },
+                                { title: 'Wallets \u0026 DeFi Setup', description: 'Setting up MetaMask, funding wallets, and connecting to DeFi protocols.', is_free: true },
+                                { title: 'Decentralized Exchanges (DEXs)', description: 'How Uniswap, SushiSwap, and automated market makers (AMMs) work.', is_free: false },
+                                { title: 'Yield Farming \u0026 Liquidity Mining', description: 'Providing liquidity, earning APY, and understanding impermanent loss.', is_free: false },
+                                { title: 'Lending \u0026 Borrowing: Aave \u0026 Compound', description: 'How to lend assets, borrow against collateral, and manage liquidation risk.', is_free: false },
+                                { title: 'Stablecoins Explained', description: 'USDC, DAI, USDT - how algorithmic and collateralized stablecoins maintain their peg.', is_free: false },
+                                { title: 'DeFi Risks \u0026 Security', description: 'Smart contract risks, rug pulls, and how to protect yourself in DeFi.', is_free: false },
+                                { title: 'Advanced DeFi: Options \u0026 Derivatives', description: 'Using protocols like dYdX and Synthetix for advanced trading strategies.', is_free: false }
+                            ]
+                        }
+
+                        // AI Neural Networks course
+                        if (title.includes('AI for Everyone')) {
+                            return [
+                                { title: 'What is Artificial Intelligence?', description: 'Understanding AI, machine learning, and deep learning - the complete landscape.', is_free: true },
+                                { title: 'How Neural Networks Learn', description: 'The basics of neurons, layers, weights, and backpropagation explained visually.', is_free: false },
+                                { title: 'Supervised vs Unsupervised Learning', description: 'Classification, regression, clustering - when to use each approach.', is_free: false },
+                                { title: 'Real-World AI Applications', description: 'From recommendation systems to autonomous vehicles - AI in action.', is_free: false },
+                                { title: 'AI Ethics \u0026 Bias', description: 'Understanding algorithmic bias, fairness, and responsible AI development.', is_free: false },
+                                { title: 'Computer Vision Basics', description: 'How AI recognizes images, faces, and objects in the real world.', is_free: false },
+                                { title: 'Natural Language Processing (NLP)', description: 'Teaching machines to understand human language - from chatbots to translation.', is_free: false },
+                                { title: 'The Future of AI', description: 'AGI, AI safety, and where the field is heading in the next decade.', is_free: false }
+                            ]
+                        }
+
+                        // Python ML course
+                        if (title.includes('Python')) {
+                            return [
+                                { title: 'Python Environment Setup', description: 'Installing Anaconda, Jupyter, and essential libraries for data science.', is_free: true },
+                                { title: 'NumPy Essentials', description: 'Arrays, vectorization, and numerical computing with NumPy.', is_free: false },
+                                { title: 'Pandas for Data Manipulation', description: 'DataFrames, data cleaning, and exploratory data analysis.', is_free: false },
+                                { title: 'Matplotlib \u0026 Seaborn Visualization', description: 'Creating publication-quality plots and understanding your data visually.', is_free: false },
+                                { title: 'Scikit-Learn: Your First Model', description: 'Training your first machine learning model with linear regression.', is_free: false },
+                                { title: 'Classification Algorithms', description: 'Decision trees, random forests, and logistic regression for prediction.', is_free: false },
+                                { title: 'Model Evaluation \u0026 Cross-Validation', description: 'Accuracy, precision, recall, F1-score, and avoiding overfitting.', is_free: false },
+                                { title: 'Deep Learning with TensorFlow', description: 'Building neural networks for image classification and beyond.', is_free: false },
+                                { title: 'Real Project: Predicting House Prices', description: 'End-to-end ML project from data collection to model deployment.', is_free: false }
+                            ]
+                        }
+
+                        // Generic fallback for other courses
+                        return [
+                            { title: `Welcome to ${title}`, description: 'Course introduction and learning objectives. [Download Resources](https://example.com/resources.pdf)', is_free: true },
+                            { title: 'Module 1: Fundamentals', description: 'Core concepts and terminology you need to master.', is_free: true },
+                            { title: 'Module 2: Practical Applications', description: 'Hands-on exercises to reinforce your understanding.', is_free: false },
+                            { title: 'Module 3: Advanced Concepts', description: 'Deep dive into complex topics and edge cases.', is_free: false },
+                            { title: 'Module 4: Real-World Projects', description: 'Building production-ready solutions step by step.', is_free: false },
+                            { title: 'Module 5: Best Practices', description: 'Industry standards, security, and optimization techniques.', is_free: false },
+                            { title: 'Module 6: Tools \u0026 Ecosystem', description: 'Essential tools, libraries, and resources for professionals.', is_free: false },
+                            { title: 'Final Project \u0026 Certification', description: 'Capstone project to demonstrate your new skills.', is_free: false }
+                        ]
+                    }
+
+                    const lessonTemplates = getLessonsForCourse(courseItem.title, courseItem.id)
+                    const lessons = lessonTemplates.map((template, index) => ({
+                        course_id: courseItem.id,
+                        title: template.title,
+                        description: template.description,
+                        video_url: `https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/${index % 2 === 0 ? 'BigBuckBunny' : 'ElephantsDream'}.mp4`,
+                        order_index: index + 1,
+                        is_free: template.is_free,
+                        duration_minutes: Math.floor(Math.random() * 30) + 10 // Random duration 10-40 mins
+                    }))
+
                     await supabase.from('lessons').insert(lessons)
                 }
             }

@@ -22,42 +22,39 @@ export default function HeroSection() {
                         The Future of Online Learning
                     </div>
                     <h1 className="text-5xl md:text-8xl font-black mb-6 text-foreground tracking-tight leading-[1.1]">
-                        Global Hub for <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600">Web3 & AI</span> Mastery
+                        Global Hub for <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700">Web3 & AI</span> Mastery
                     </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
                         Join the next generation of builders. Access premium, industry-led courses in Web3, AI, and Blockchain.
                     </p>
 
-                    {!loading && (
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            {user ? (
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        {!loading && user ? (
+                            <Link
+                                href="/dashboard"
+                                className="btn-primary text-lg px-8 py-3 rounded-xl shadow-lg shadow-primary/25 hover:scale-105 transition-all flex items-center gap-2"
+                            >
+                                <Rocket className="w-5 h-5" />
+                                Go to Dashboard
+                            </Link>
+                        ) : (
+                            <>
                                 <Link
-                                    href="/dashboard"
+                                    href="/sign-up"
                                     className="btn-primary text-lg px-8 py-3 rounded-xl shadow-lg shadow-primary/25 hover:scale-105 transition-all flex items-center gap-2"
                                 >
                                     <Rocket className="w-5 h-5" />
-                                    Go to Dashboard
+                                    Get Started
                                 </Link>
-                            ) : (
-                                <>
-                                    <Link
-                                        href="/sign-up"
-                                        className="btn-primary text-lg px-8 py-3 rounded-xl shadow-lg shadow-primary/25 hover:scale-105 transition-all flex items-center gap-2"
-                                    >
-                                        <Rocket className="w-5 h-5" />
-                                        Get Started
-                                    </Link>
-                                    <Link
-                                        href="/courses"
-                                        className="btn-secondary text-lg px-8 py-3 rounded-xl hover:scale-105 transition-all flex items-center gap-2"
-                                    >
-                                        Browse Courses
-                                    </Link>
-                                </>
-                            )}
-                        </div>
-                    )}
-                    {loading && <div className="h-14 w-64 bg-white/5 animate-pulse rounded-xl mx-auto" />}
+                                <Link
+                                    href="/courses"
+                                    className="btn-secondary text-lg px-8 py-3 rounded-xl hover:scale-105 transition-all flex items-center gap-2"
+                                >
+                                    Browse Courses
+                                </Link>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </section>

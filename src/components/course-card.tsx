@@ -47,8 +47,8 @@ export default function CourseCard({ course, onBuy, onWishlist, isWishlisted }: 
                         onError={() => setImgSrc('')}
                     />
                 ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-6 text-center">
-                        <Zap className="w-12 h-12 text-primary mb-2 opacity-50" />
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/80 to-amber-800/80 p-6 text-center">
+                        <Zap className="w-12 h-12 text-amber-400 mb-2 opacity-50" />
                     </div>
                 )}
 
@@ -108,7 +108,7 @@ export default function CourseCard({ course, onBuy, onWishlist, isWishlisted }: 
                             onWishlist(course.id)
                         }}
                         className={`p-2.5 rounded-xl transition-all duration-200 border border-transparent ${isWishlisted
-                            ? 'bg-pink-500/10 text-pink-500 border-pink-500/20'
+                            ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
                             : 'bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-white hover:border-white/10'
                             }`}
                     >

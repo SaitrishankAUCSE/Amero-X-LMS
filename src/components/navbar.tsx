@@ -53,30 +53,9 @@ export default function Navbar() {
     }, [])
 
     async function checkUser() {
-        // Enforce max 2s loading time
-        const timeout = new Promise<null>((resolve) => {
-            setTimeout(() => {
-                console.warn('Auth check timed out, defaulting to guest')
-                resolve(null)
-            }, 2000)
-        })
-
         try {
-            const userPromise = getCurrentUser()
-            // Race: whichever finishes first. If timeout wins, we get null.
-            // If userPromise wins, we get user.
-            // Note: If timeout wins, the user fetch still runs in background but we don't await it here anymore for the UI block.
-            // But we actually want to update UI if it eventually returns? 
-            // For now, let's just unblock the UI.
-            const result = await Promise.race([userPromise, timeout])
-
-            if (result) {
-                setUser(result)
-            } else {
-                // If timed out or null, we might check again? 
-                // For now, just setUser(null) so buttons appear.
-                setUser(null)
-            }
+            const result = await getCurrentUser()
+            setUser(result)
         } catch (error) {
             console.error('Error loading user:', error)
             setUser(null)
@@ -109,7 +88,7 @@ export default function Navbar() {
                 <div className="flex h-20 items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-3 group">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform duration-300">
+                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-900/20 group-hover:scale-105 transition-transform duration-300">
                             <span className="text-white font-bold text-xl">A</span>
                         </div>
                         <span className="font-bold text-xl tracking-tight">Amero X</span>
@@ -140,11 +119,11 @@ export default function Navbar() {
                             <span>EN</span>
                         </button>
 
-                        {!loading && !user && (
+                        {!user && (
                             <div className="flex items-center gap-3">
                                 <Link
                                     href="/sign-in"
-                                    className="text-sm font-medium text-muted-foreground hover:text-white transition-colors"
+                                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     Log In
                                 </Link>
@@ -183,7 +162,7 @@ export default function Navbar() {
                                             className="w-10 h-10 rounded-full object-cover shadow-md border-2 border-primary/20 p-0.5"
                                         />
                                     ) : (
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md border-2 border-primary/20">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-500 to-yellow-600 flex items-center justify-center text-white font-bold shadow-md border-2 border-primary/20">
                                             {user?.email?.[0]?.toUpperCase() || <Menu className="w-4 h-4" />}
                                         </div>
                                     )}
@@ -217,7 +196,7 @@ export default function Navbar() {
                                                     onClick={() => setUserMenuOpen(false)}
                                                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                    <div className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
                                                         <BookOpen className="w-4 h-4" />
                                                     </div>
                                                     My Learning
@@ -227,7 +206,7 @@ export default function Navbar() {
                                                     onClick={() => setUserMenuOpen(false)}
                                                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                                    <div className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
                                                         <LayoutDashboard className="w-4 h-4" />
                                                     </div>
                                                     Dashboard
@@ -242,7 +221,7 @@ export default function Navbar() {
                                                     onClick={() => setUserMenuOpen(false)}
                                                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                                                    <div className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
                                                         <Sun className="w-4 h-4" />
                                                     </div>
                                                     Settings & Profile
@@ -257,7 +236,7 @@ export default function Navbar() {
                                                     onClick={() => setUserMenuOpen(false)}
                                                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                                    <div className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-colors">
                                                         <GraduationCap className="w-4 h-4" />
                                                     </div>
                                                     About Us
@@ -267,7 +246,7 @@ export default function Navbar() {
                                                     onClick={() => setUserMenuOpen(false)}
                                                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all group"
                                                 >
-                                                    <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                                         <Globe className="w-4 h-4" />
                                                     </div>
                                                     Contact Support
@@ -280,9 +259,9 @@ export default function Navbar() {
                                                         handleSignOut();
                                                         setUserMenuOpen(false);
                                                     }}
-                                                    className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                                                    className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-amber-700 hover:bg-amber-500/10 rounded-xl transition-all"
                                                 >
-                                                    <div className="p-1.5 rounded-lg bg-red-500/10">
+                                                    <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-700">
                                                         <LogOut className="w-4 h-4" />
                                                     </div>
                                                     Sign Out
@@ -338,7 +317,7 @@ export default function Navbar() {
                                             handleSignOut()
                                             setMobileMenuOpen(false)
                                         }}
-                                        className="flex items-center space-x-3 text-lg font-medium text-red-400 hover:text-red-300 transition-colors p-2 text-left w-full"
+                                        className="flex items-center space-x-3 text-lg font-medium text-amber-700 hover:text-amber-600 transition-colors p-2 text-left w-full"
                                     >
                                         <LogOut className="w-5 h-5" />
                                         <span>Sign Out</span>
@@ -356,7 +335,7 @@ export default function Navbar() {
                                     <Link
                                         href="/sign-up"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="flex justify-center items-center py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-500 transition-all"
+                                        className="flex justify-center items-center py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all"
                                     >
                                         Get Started
                                     </Link>
