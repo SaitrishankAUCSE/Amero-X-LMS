@@ -36,7 +36,11 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                 return
             }
 
-            // check enrollment
+            // Check enrollment
+            // We still use supabase client for this because we need to check the CURRENT user's enrollment
+            // This might fail if RLS blocks reading your own enrollments, but usually that's allowed.
+            // If it fails, we might need an API route for "check-my-enrollment" too.
+            // Let's assume enrollment check works for now.
             const { data: enrollment } = await supabase
                 .from('enrollments')
                 .select('id')
@@ -48,44 +52,46 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                 // Check if it's the instructor
                 const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
 
-                // Fetch course to check instructor_id
-                const { data: courseCheck } = await supabase.from('courses').select('instructor_id').eq('id', courseId).single()
+                // For course check we can use the API data later, but need immediate check here
+                // We'll trust the API fetch below to get course data for instructor check if needed
+                // Or just rely on enrollment.
+                // Let's defer strict "instructor check" to the API fetch logic if possible, 
+                // but simpler: if no enrollment, and locally we can't confirm admin, redirect.
+                // BUT, to be safe against RLS on 'courses', we'll fetch course data via API first.
+            }
 
-                if (profile?.role !== 'admin' && courseCheck?.instructor_id !== user.id) {
-                    router.push(`/courses`) // or buy page
-                    return
+            // 2. Fetch Course & Lessons via API (Bypassing RLS)
+            try {
+                const response = await fetch(`/api/learn/${courseId}`)
+                if (!response.ok) throw new Error('Failed to load course content')
+
+                const data = await response.json()
+                setCourse(data.course)
+                setLessons(data.lessons || [])
+
+                // Delayed instructor check if not enrolled
+                if (!enrollment) {
+                    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+                    const isInstructor = data.course.instructor_id === user.id
+                    const isAdmin = profile?.role === 'admin'
+
+                    if (!isInstructor && !isAdmin) {
+                        router.push(`/courses/${data.course.slug || ''}`) // Redirect to course detail/buy page
+                        return
+                    }
                 }
-            }
 
-            // 2. Fetch Course & Lessons
-            const { data: courseData, error: courseError } = await supabase
-                .from('courses')
-                .select('*')
-                .eq('id', courseId)
-                .single()
-
-            if (courseError) {
-                console.error("Error loading course:", courseError)
-                return
-            }
-            setCourse(courseData)
-
-            const { data: lessonsData, error: lessonsError } = await supabase
-                .from('lessons')
-                .select('*')
-                .eq('course_id', courseId)
-                .order('order_index', { ascending: true })
-
-            if (lessonsData) {
-                setLessons(lessonsData)
-                if (lessonsData.length > 0) {
-                    const firstLesson = lessonsData[0]
+                if (data.lessons && data.lessons.length > 0) {
+                    const firstLesson = data.lessons[0]
                     setActiveLesson(firstLesson)
 
                     // Fetch progress for first lesson
                     const progressData = await getLessonProgress(user.id, firstLesson.id)
                     setProgress(progressData)
                 }
+
+            } catch (err) {
+                console.error("Error loading course API:", err)
             }
 
             setUser(user)

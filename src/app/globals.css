@@ -136,41 +136,9 @@ body,
 /* ========================================
    BLACK AND GOLD THEME - Dark Mode
    ======================================== */
+/* Dark mode overrides removed to enforce White/Gold theme */
 .dark {
-  --background: 30 10% 8%;
-  --foreground: 45 30% 95%;
-
-  --card: 30 15% 12%;
-  --card-foreground: 45 30% 95%;
-
-  --popover: 30 15% 10%;
-  --popover-foreground: 45 30% 95%;
-
-  /* Gold Primary in Dark Mode */
-  --primary: 42 80% 55%;
-  --primary-foreground: 30 10% 5%;
-
-  --secondary: 30 20% 18%;
-  --secondary-foreground: 42 70% 60%;
-
-  --muted: 30 15% 20%;
-  --muted-foreground: 42 20% 60%;
-
-  --accent: 30 25% 20%;
-  --accent-foreground: 42 80% 55%;
-
-  --destructive: 30 60% 45%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border: 30 20% 22%;
-  --input: 30 20% 22%;
-  --ring: 42 80% 55%;
-
-  --chart-1: 42 80% 55%;
-  --chart-2: 42 60% 65%;
-  --chart-3: 30 50% 45%;
-  --chart-4: 45 30% 70%;
-  --chart-5: 42 15% 55%;
+  /* Inherit from :root for a consistent White/Gold look */
 }
 
 @layer base {

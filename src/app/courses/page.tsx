@@ -24,101 +24,28 @@ export default function CoursesPage() {
         let isMounted = true
 
         async function loadData() {
-            const supabase = createBrowserClient()
-
             try {
-                // Load categories
-                const { data: categoriesData, error: categoriesError } = await supabase
-                    .from('categories')
-                    .select('*')
-                    .order('name')
+                const response = await fetch('/api/courses')
+                if (!response.ok) {
+                    throw new Error('Failed to fetch courses')
+                }
+                const data = await response.json()
 
-                if (!isMounted) return
-
-                if (categoriesError) {
-                    const isAbort = categoriesError.message?.includes('AbortError') ||
-                        categoriesError.message?.includes('signal is aborted') ||
-                        categoriesError.details?.includes('AbortError');
-
-                    if (!isAbort) {
-                        console.error('Error loading categories:', JSON.stringify(categoriesError, null, 2))
-                    }
-                } else if (categoriesData) {
-                    setCategories(categoriesData)
+                if (isMounted) {
+                    setCourses(data.courses || [])
+                    setCategories(data.categories || [])
                 }
 
-                // Load published courses
-                const { data: coursesData, error: coursesError } = await supabase
-                    .from('courses')
-                    .select('*')
-                    .eq('is_published', true)
-                    .order('created_at', { ascending: false })
-
-                if (!isMounted) return
-
-                if (coursesError) {
-                    const isAbort = coursesError.message?.includes('AbortError') ||
-                        coursesError.message?.includes('signal is aborted') ||
-                        coursesError.details?.includes('AbortError');
-
-                    if (!isAbort) {
-                        console.error('Error loading courses (full):', coursesError)
-                        console.error('Error details:', {
-                            message: coursesError.message,
-                            code: coursesError.code,
-                            details: coursesError.details,
-                            hint: coursesError.hint
-                        })
-                        setCourses([])
-                    }
-                } else if (coursesData && coursesData.length > 0) {
-                    // Get unique instructor IDs and category IDs
-                    const instructorIds = [...new Set(coursesData.map((c: any) => c.instructor_id).filter(Boolean))]
-                    const categoryIds = [...new Set(coursesData.map((c: any) => c.category_id).filter(Boolean))]
-
-                    // Fetch instructors
-                    const { data: instructorsData } = await supabase
-                        .from('profiles')
-                        .select('id, full_name')
-                        .in('id', instructorIds)
-
-                    // Fetch categories (supplemental lookup)
-                    // We can reuse categoriesData if we want, but this logic guarantees we have the ones referenced by courses
-                    const { data: categoriesDataForCourses } = await supabase
-                        .from('categories')
-                        .select('id, name')
-                        .in('id', categoryIds)
-
-                    if (!isMounted) return
-
-                    // Create lookup maps
-                    const instructorMap = new Map(instructorsData?.map((i: any) => [i.id, i.full_name]) || [])
-                    const categoryMap = new Map(categoriesDataForCourses?.map((c: any) => [c.id, c.name]) || [])
-
-                    // Format courses with instructor and category names
-                    const formattedCourses = coursesData.map((course: any) => ({
-                        ...course,
-                        instructor_name: instructorMap.get(course.instructor_id) || 'Anonymous',
-                        category_name: categoryMap.get(course.category_id) || 'Uncategorized'
-                    }))
-                    setCourses(formattedCourses)
-                } else {
-                    setCourses([])
-                }
-
-                // Get current user
+                // Get current user (still needs supabase client for auth state)
+                const supabase = createBrowserClient()
                 const { data: { user } } = await supabase.auth.getUser()
                 if (isMounted) {
                     setUser(user)
                 }
 
             } catch (error: any) {
-                if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted')) {
-                    // Request aborted, ignore
-                    return
-                }
                 if (isMounted) {
-                    console.error('Unexpected error loading data:', error)
+                    console.error('Error loading data:', error)
                     setCourses([])
                 }
             } finally {

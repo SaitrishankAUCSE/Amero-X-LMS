@@ -30,64 +30,43 @@ export default function CourseDetailPage() {
     }, [params.slug])
 
     async function loadCourse() {
-        const supabase = createBrowserClient()
+        try {
+            const response = await fetch(`/api/courses/${params.slug}`)
 
-        // Get course details
-        const { data: courseData } = await supabase
-            .from('courses')
-            .select(`
-        *,
-        profiles:instructor_id (full_name, bio, avatar_url),
-        categories (name)
-      `)
-            .eq('slug', params.slug)
-            .eq('is_published', true)
-            .single()
+            if (!response.ok) {
+                if (response.status === 404) {
+                    router.push('/courses')
+                    return
+                }
+                throw new Error('Failed to load course')
+            }
 
-        if (!courseData) {
-            router.push('/courses')
-            return
+            const data = await response.json()
+            setCourse(data.course)
+            setLessons(data.lessons || [])
+            setReviews(data.reviews || [])
+
+            // Check enrollment (still needs supabase client for auth check)
+            const supabase = createBrowserClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (user) {
+                setUser(user)
+                const { data: enrollment } = await supabase
+                    .from('enrollments')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('course_id', data.course.id)
+                    .single()
+
+                setIsEnrolled(!!enrollment)
+            }
+        } catch (error) {
+            console.error('Error loading course:', error)
+            router.push('/courses') // Fallback
+        } finally {
+            setLoading(false)
         }
-
-        setCourse(courseData)
-
-        // Get lessons
-        const { data: lessonsData } = await supabase
-            .from('lessons')
-            .select('*')
-            .eq('course_id', courseData.id)
-            .order('order_index')
-
-        if (lessonsData) setLessons(lessonsData)
-
-        // Get reviews
-        const { data: reviewsData } = await supabase
-            .from('reviews')
-            .select(`
-        *,
-        profiles (full_name, avatar_url)
-      `)
-            .eq('course_id', courseData.id)
-            .order('created_at', { ascending: false })
-            .limit(5)
-
-        if (reviewsData) setReviews(reviewsData)
-
-        // Check enrollment
-        const currentUser = await getCurrentUser()
-        if (currentUser) {
-            setUser(currentUser)
-            const { data: enrollment } = await supabase
-                .from('enrollments')
-                .select('id')
-                .eq('user_id', currentUser.id)
-                .eq('course_id', courseData.id)
-                .single()
-
-            setIsEnrolled(!!enrollment)
-        }
-
-        setLoading(false)
     }
 
     function handleEnroll() {
