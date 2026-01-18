@@ -14,41 +14,62 @@ export default function MyCoursesPage() {
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState<'all' | 'inprogress' | 'completed'>('all')
 
+    const [error, setError] = useState<string | null>(null)
+
     useEffect(() => {
         loadCourses()
     }, [])
 
     async function loadCourses() {
         try {
-            const currentUser = await getCurrentUser()
-            if (!currentUser) {
-                router.push('/sign-in')
-                return
+            setLoading(true)
+            setError(null)
+
+            // Timeout wrapper
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timed out')), 8000)
+            )
+
+            const fetchDataPromise = async () => {
+                const currentUser = await getCurrentUser()
+                if (!currentUser) {
+                    // Force hard redirect to clear potential stale state
+                    window.location.href = '/sign-in'
+                    return null
+                }
+
+                const supabase = createBrowserClient()
+
+                const { data: enrollments, error: dbError } = await supabase
+                    .from('enrollments')
+                    .select(`
+                      *,
+                      courses (
+                        id,
+                        title,
+                        slug,
+                        thumbnail_url,
+                        description,
+                        profiles:instructor_id (full_name)
+                      )
+                    `)
+                    .eq('user_id', currentUser.id)
+                    .order('enrolled_at', { ascending: false })
+
+                if (dbError) throw dbError
+                return enrollments
             }
 
-            const supabase = createBrowserClient()
+            // Race data fetch against timeout
+            const result = await Promise.race([fetchDataPromise(), timeoutPromise])
 
-            const { data: enrollments } = await supabase
-                .from('enrollments')
-                .select(`
-          *,
-          courses (
-            id,
-            title,
-            slug,
-            thumbnail_url,
-            description,
-            profiles:instructor_id (full_name)
-          )
-        `)
-                .eq('user_id', currentUser.id)
-                .order('enrolled_at', { ascending: false })
-
-            if (enrollments) {
-                setCourses(enrollments)
+            if (result) {
+                setCourses(result as any[])
             }
-        } catch (error) {
+
+        } catch (error: any) {
             console.error('Load courses error:', error)
+            setError(error.message || 'Failed to load courses')
         } finally {
             setLoading(false)
         }
@@ -86,7 +107,21 @@ export default function MyCoursesPage() {
                 </div>
             </div>
 
-            {loading ? (
+            {error ? (
+                <div className="text-center py-20 bg-red-500/10 border border-red-500/20 rounded-2xl max-w-2xl mx-auto">
+                    <h2 className="text-xl font-bold text-red-500 mb-2">Unable to load courses</h2>
+                    <p className="text-muted-foreground mb-6">{error}</p>
+                    <button
+                        onClick={() => {
+                            setLoading(true);
+                            loadCourses();
+                        }}
+                        className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            ) : loading ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[...Array(3)].map((_, i) => (
                         <div key={i} className="h-80 bg-muted animate-pulse rounded-xl" />
