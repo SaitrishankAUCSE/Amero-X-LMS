@@ -43,6 +43,18 @@ export async function GET() {
             instructor = newInstructor
         }
 
+        // 1.5 Promote specific user to admin
+        const adminEmail = 'saitrishankb9@gmail.com'
+        const { data: { users: adminUsers }, error: adminUserError } = await (supabase.auth as any).admin.listUsers()
+
+        if (!adminUserError && adminUsers) {
+            const adminUser = adminUsers.find((u: any) => u.email === adminEmail)
+            if (adminUser) {
+                await supabase.from('profiles').update({ role: 'admin' }).eq('id', adminUser.id)
+                console.log(`Promoted ${adminEmail} to admin`)
+            }
+        }
+
         // 2. Fetch all courses (old and new)
         const { data: allCourses } = await supabase.from('courses').select('id, title')
 
