@@ -61,6 +61,29 @@ export default function RootLayout({
                 background: 'hsl(var(--card))',
                 color: 'hsl(var(--foreground))',
                 border: '1px solid hsl(var(--border))',
+                borderRadius: '12px',
+                padding: '14px 18px',
+                fontSize: '14px',
+                fontWeight: '500',
+                boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
+              },
+              success: {
+                iconTheme: {
+                  primary: 'hsl(142 76% 36%)',
+                  secondary: 'white',
+                },
+                style: {
+                  borderLeft: '4px solid hsl(142 76% 36%)',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: 'hsl(0 84% 60%)',
+                  secondary: 'white',
+                },
+                style: {
+                  borderLeft: '4px solid hsl(0 84% 60%)',
+                },
               },
             }}
           />

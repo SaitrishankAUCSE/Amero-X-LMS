@@ -147,7 +147,10 @@ export default function Navbar() {
                         )}
 
                         {loading ? (
-                            <div className="w-24 h-10 bg-white/5 animate-pulse rounded-xl" />
+                            <div className="flex items-center gap-3">
+                                <div className="w-20 h-8 bg-gradient-to-r from-muted/50 via-muted to-muted/50 bg-[length:200%_100%] rounded-lg" style={{ animation: 'shimmer 1.5s infinite' }} />
+                                <div className="w-10 h-10 bg-gradient-to-r from-muted/50 via-muted to-muted/50 bg-[length:200%_100%] rounded-full" style={{ animation: 'shimmer 1.5s infinite' }} />
+                            </div>
                         ) : user ? (
                             <div className="relative">
                                 <button
