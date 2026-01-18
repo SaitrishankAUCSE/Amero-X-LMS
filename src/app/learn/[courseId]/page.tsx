@@ -138,7 +138,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
                         {lessons.map((lesson, idx) => (
                             <button
                                 key={lesson.id}
-                                onClick={() => setActiveLesson(lesson)}
+                                onClick={() => handleLessonChange(lesson)}
                                 className={`w-full text-left p-3 rounded-xl text-sm font-medium transition-all flex gap-3 ${activeLesson?.id === lesson.id
                                     ? 'bg-primary/10 text-primary border border-primary/20'
                                     : 'hover:bg-muted text-muted-foreground hover:text-foreground'

@@ -131,7 +131,7 @@ export default function MyCoursesPage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredCourses.map(enrollment => {
                         const course = enrollment.courses
-                        const progress = Math.floor(Math.random() * 100) // Mock progress
+                        const progress = 0 // TODO: Fetch actual progress from lesson_progress table
 
                         return (
                             <div key={enrollment.id} className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all">

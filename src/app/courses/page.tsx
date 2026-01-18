@@ -171,7 +171,7 @@ export default function CoursesPage() {
                     course={selectedCourse}
                     userId={user?.id || ''}
                     userEmail={user?.email || ''}
-                    userName={user?.user_metadata?.full_name || 'Student'}
+                    userName={user?.full_name || 'Student'}
                 />
             )}
         </div>
