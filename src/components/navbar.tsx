@@ -119,7 +119,7 @@ export default function Navbar() {
                             <span>EN</span>
                         </button>
 
-                        {!user && (
+                        {!loading && !user && (
                             <div className="flex items-center gap-3">
                                 <Link
                                     href="/sign-in"
