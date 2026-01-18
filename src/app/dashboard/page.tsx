@@ -26,17 +26,10 @@ export default function DashboardPage() {
     async function loadData() {
         try {
             const currentUser = await getCurrentUser()
-            // If component unmounted during await, stop
+            // If no user found on client side, the middleware should have already handled redirect.
+            // We just show loading or empty state; don't redirect here to avoid loops.
             if (!currentUser) {
-                // Double check if it was just an auth failure or abort
-                // But here we rely on the router push below or just return
-                if (window.location.pathname.includes('/dashboard')) {
-                    // Only redirect if we are still on the page? 
-                    // Actually better to just check isMounted if we could, 
-                    // but since we extracted loadData, let's keep it simple:
-                    // getCurrentUser handles its own aborts now (planned).
-                    router.push('/sign-in')
-                }
+                setLoading(false)
                 return
             }
             setUser(currentUser)

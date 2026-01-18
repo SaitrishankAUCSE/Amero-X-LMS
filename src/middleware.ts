@@ -60,7 +60,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // 2. Protected Paths (Redirect to sign-in if not logged in)
-    const protectedPaths = ['/dashboard', '/instructor', '/admin', '/learn', '/settings']
+    const protectedPaths = ['/dashboard', '/instructor', '/admin', '/learn', '/settings', '/courses']
     const isProtectedPath = protectedPaths.some(p => path.startsWith(p))
 
     if (isProtectedPath && !user) {
