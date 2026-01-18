@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { signIn, getCurrentUser, signInWithOAuth } from '@/lib/auth'
+import { signIn, getCurrentUser } from '@/lib/auth'
 import toast from 'react-hot-toast'
 import { Github, Eye, EyeOff, LockKeyhole, Mail, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,7 +16,7 @@ function SignInContent() {
     const message = searchParams.get('message')
 
     const [loading, setLoading] = useState(false)
-    const [oauthLoading, setOauthLoading] = useState(false)
+
     const [checkingAuth, setCheckingAuth] = useState(true)
     const [formData, setFormData] = useState({
         email: '',
@@ -71,15 +71,7 @@ function SignInContent() {
         }
     }
 
-    const handleOAuth = async (provider: 'google' | 'github') => {
-        setOauthLoading(true)
-        try {
-            await signInWithOAuth(provider)
-        } catch (error: any) {
-            toast.error(`Failed to sign in with ${provider}`)
-            setOauthLoading(false)
-        }
-    }
+
 
     // Show loading state while checking authentication
     if (checkingAuth) {
@@ -180,7 +172,7 @@ function SignInContent() {
 
                     <button
                         type="submit"
-                        disabled={loading || oauthLoading}
+                        disabled={loading}
                         className="w-full btn-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2 group transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden relative"
                     >
                         <AnimatePresence mode="wait">

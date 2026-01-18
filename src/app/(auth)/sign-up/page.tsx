@@ -12,7 +12,7 @@ import OAuthButtons from '@/components/auth/oauth-buttons'
 export default function SignUpPage() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
-    const [oauthLoading, setOauthLoading] = useState(false)
+
     const [checkingAuth, setCheckingAuth] = useState(true)
     const [formData, setFormData] = useState({
         fullName: '',
@@ -120,15 +120,7 @@ export default function SignUpPage() {
         }
     }
 
-    const handleOAuth = async (provider: 'google' | 'github') => {
-        setOauthLoading(true)
-        try {
-            await signInWithOAuth(provider)
-        } catch (error: any) {
-            toast.error(`Failed to sign in with ${provider}`)
-            setOauthLoading(false)
-        }
-    }
+
 
     if (checkingAuth) {
         return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>

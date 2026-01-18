@@ -110,9 +110,8 @@ export async function signInWithOAuth(provider: 'google' | 'github') {
     const supabase = createBrowserClient()
 
     // Determine the correct origin for the redirect
-    // If we are on localhost (client-side), use window.location.origin to stay on localhost
-    // Otherwise use the production APP_URL
-    const origin = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+    // Use window.location.origin to ensure we redirect back to the exact same domain (including www vs non-www)
+    const origin = (typeof window !== 'undefined')
         ? window.location.origin
         : process.env.NEXT_PUBLIC_APP_URL || 'https://ameroxfoundation.com'
     const redirectTo = `${origin}/api/auth/callback`
