@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@/lib/supabase'
+import { getCurrentUser } from '@/lib/auth'
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import CourseCard from '@/components/course-card'
@@ -37,8 +38,7 @@ export default function CoursesPage() {
                 }
 
                 // Get current user (still needs supabase client for auth state)
-                const supabase = createBrowserClient()
-                const { data: { user } } = await supabase.auth.getUser()
+                const user = await getCurrentUser()
                 if (isMounted) {
                     setUser(user)
                 }

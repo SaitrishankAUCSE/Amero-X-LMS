@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase'
+import { getCurrentUser } from '@/lib/auth'
 import { MailCheck, Loader2, XCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -13,19 +14,17 @@ export default function AuthCallbackPage() {
 
     useEffect(() => {
         const handleCallback = async () => {
-            const { data, error } = await supabase.auth.getUser()
+            const user = await getCurrentUser()
 
-            if (error) {
+            if (!user) {
                 setStatus('error')
                 toast.error('Authentication failed')
                 return
             }
 
-            if (data.user) {
-                setStatus('success')
-                toast.success('Successfully authenticated!')
-                router.push('/dashboard')
-            }
+            setStatus('success')
+            toast.success('Successfully authenticated!')
+            router.push('/dashboard')
         }
 
         handleCallback()

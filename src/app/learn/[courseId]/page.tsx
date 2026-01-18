@@ -9,6 +9,7 @@ import Navbar from '@/components/navbar'
 import { LessonVideoPlayer } from '@/components/video/lesson-player'
 import { getLessonProgress } from '@/app/actions/progress-actions'
 import { LessonNotes } from '@/components/video/lesson-notes'
+import { getCurrentUser } from '@/lib/auth'
 
 export default function LearnPage({ params }: { params: Promise<{ courseId: string }> }) {
     // Unwrap params using React.use()
@@ -30,7 +31,7 @@ export default function LearnPage({ params }: { params: Promise<{ courseId: stri
             const supabase = createBrowserClient()
 
             // 1. Check Auth & Enrollment
-            const { data: { user } } = await supabase.auth.getUser()
+            const user = await getCurrentUser()
             if (!user) {
                 router.push(`/sign-in?redirect=/learn/${courseId}`)
                 return

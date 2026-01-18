@@ -48,7 +48,7 @@ export default function CourseDetailPage() {
 
             // Check enrollment (still needs supabase client for auth check)
             const supabase = createBrowserClient()
-            const { data: { user } } = await supabase.auth.getUser()
+            const user = await getCurrentUser()
 
             if (user) {
                 setUser(user)
