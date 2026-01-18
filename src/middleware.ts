@@ -30,7 +30,18 @@ export async function middleware(request: NextRequest) {
     )
 
     // IMPORTANT: DO NOT REMOVE getUser() - it's required for RLS and session refreshes
-    const { data: { user } } = await supabase.auth.getUser()
+    let user = null
+    try {
+        const { data } = await supabase.auth.getUser()
+        user = data.user
+    } catch (error: any) {
+        // Ignore AbortError which can happen during rapid navigation or cancellations
+        if (error.name === 'AbortError' || error.message?.includes('aborted') || error.message?.includes('signal is aborted')) {
+            // treat as no user
+        } else {
+            console.error('Middleware auth check error:', error)
+        }
+    }
 
     const path = request.nextUrl.pathname
 
